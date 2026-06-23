@@ -87,21 +87,22 @@ export default function ContactForm({ labels }) {
   const [services, setServices] = useState(DEFAULT_SERVICES);
 
   useEffect(() => {
-    // Load masters dynamically from Sanity
+    // Load masters from Sanity — if source='sanity', use exactly what's there (even [])
     fetch("/api/admin/masters")
       .then(r => r.json())
       .then(d => {
-        if (d.items?.length > 0) {
-          setMasters(["Любой свободный мастер", ...d.items.map(m => m.name).filter(Boolean)]);
+        if (d.source === "sanity") {
+          const names = (d.items || []).map(m => m.name).filter(Boolean);
+          setMasters(["Любой свободный мастер", ...names]);
         }
       })
       .catch(() => {});
 
-    // Load services dynamically from Sanity
+    // Load services from Sanity
     fetch("/api/admin/services")
       .then(r => r.json())
       .then(d => {
-        if (d.items?.length > 0) {
+        if (d.source === "sanity" && d.items?.length > 0) {
           const names = d.items
             .map(s => (typeof s.title === "object" ? s.title?.ru : s.title) || "")
             .filter(Boolean);

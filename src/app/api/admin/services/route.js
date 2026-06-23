@@ -2,7 +2,10 @@ import { adminClient, isSanityConfigured } from '@/sanity/lib/adminClient';
 import { site } from '@/content/site';
 
 const FALLBACK = site.serviceCategories.flatMap((cat) =>
-  cat.items.map((item, i) => ({ _id: `${cat.tab}_${i}`, title: item.name, price: item.price, description: item.desc || '', category: cat.tab, order: i }))
+  cat.items.map((item, i) => ({
+    _id: `${cat.tab}_${i}`, title: item.name, price: item.price,
+    description: item.desc || '', category: cat.tab, order: i,
+  }))
 );
 
 export async function GET() {
@@ -13,7 +16,7 @@ export async function GET() {
     const items = await adminClient.fetch(
       `*[_type == "service"] | order(order asc) { _id, title, description, price, category, order }`
     );
-    return Response.json({ items: items.length > 0 ? items : FALLBACK, source: 'sanity' });
+    return Response.json({ items: items ?? [], source: 'sanity' });
   } catch (e) {
     return Response.json({ items: FALLBACK, source: 'fallback', error: String(e) });
   }
@@ -24,10 +27,8 @@ export async function POST(req) {
   const data = await req.json();
   const result = await adminClient.create({
     _type: 'service',
-    title: data.title,
-    description: data.description,
-    price: data.price,
-    category: data.category,
+    title: data.title, description: data.description,
+    price: data.price, category: data.category,
     order: data.order ? Number(data.order) : 99,
   });
   return Response.json({ ok: true, id: result._id });

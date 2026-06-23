@@ -12,8 +12,8 @@ export async function GET() {
         "photoUrl": coalesce(photoUrl, photo.asset->url)
       }`
     );
-    // source='sanity' whenever Sanity IS configured — even if no docs yet
-    return Response.json({ items: items.length > 0 ? items : site.team, source: 'sanity' });
+    // Return exactly what Sanity has — even if empty. Don't inject site.js fallback.
+    return Response.json({ items: items ?? [], source: 'sanity' });
   } catch (e) {
     return Response.json({ items: site.team, source: 'fallback', error: String(e) });
   }
@@ -24,12 +24,8 @@ export async function POST(req) {
   const data = await req.json();
   const result = await adminClient.create({
     _type: 'teamMember',
-    name: data.name,
-    role: data.role,
-    experience: data.experience,
-    spec: data.spec,
-    bio: data.bio,
-    photoUrl: data.photoUrl,
+    name: data.name, role: data.role, experience: data.experience,
+    spec: data.spec, bio: data.bio, photoUrl: data.photoUrl,
     order: data.order ? Number(data.order) : 99,
   });
   return Response.json({ ok: true, id: result._id });

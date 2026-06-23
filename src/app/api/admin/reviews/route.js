@@ -12,7 +12,7 @@ export async function GET() {
         "photoUrl": coalesce(photoUrl, photo.asset->url)
       }`
     );
-    return Response.json({ items: items.length > 0 ? items : site.testimonials, source: 'sanity' });
+    return Response.json({ items: items ?? [], source: 'sanity' });
   } catch (e) {
     return Response.json({ items: site.testimonials, source: 'fallback', error: String(e) });
   }
@@ -23,8 +23,7 @@ export async function POST(req) {
   const data = await req.json();
   const result = await adminClient.create({
     _type: 'testimonial',
-    name: data.name,
-    text: data.text,
+    name: data.name, text: data.text,
     rating: Number(data.rating) || 5,
     photoUrl: data.photoUrl,
     order: data.order ? Number(data.order) : 99,

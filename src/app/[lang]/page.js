@@ -39,17 +39,21 @@ export default async function HomePage({ params }) {
 
   const { team: sanityTeam, testimonials: sanityReviews, services: sanityServices } = await fetchFromSanity();
 
-  const teamMembers = sanityTeam?.length > 0 ? sanityTeam : site.team;
-  const reviews     = sanityReviews?.length > 0 ? sanityReviews : site.testimonials;
+  // null = fetch failed → fallback to site.js
+  // []   = Sanity returned empty → respect that (user deleted everything)
+  const teamMembers = sanityTeam !== null ? sanityTeam : site.team;
+  const reviews     = sanityReviews !== null ? sanityReviews : site.testimonials;
 
   // Build services object for ServicesTab from Sanity or site.js
-  let servicesObj = site.services;
-  if (sanityServices?.length > 0) {
-    servicesObj = { face: [], body: [], laser: [], care: [] };
-    sanityServices.forEach(s => {
+  // null = Sanity unavailable → use site.js; array (even empty) = Sanity is authoritative
+  let servicesObj = sanityServices !== null ? null : site.services;
+  if (sanityServices !== null) {
+    const built = { face: [], body: [], laser: [], care: [] };
+    (sanityServices || []).forEach(s => {
       const cat = s.category || "face";
-      if (servicesObj[cat]) servicesObj[cat].push({ name: s.title, price: s.price });
+      if (built[cat]) built[cat].push({ name: s.title, price: s.price });
     });
+    servicesObj = built;
   }
 
   return (

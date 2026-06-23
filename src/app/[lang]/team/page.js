@@ -11,10 +11,11 @@ import { TEAM_QUERY } from "@/lib/queries";
 export default async function TeamPage({ params }) {
   const { lang } = await params;
 
+  // null = Sanity unavailable → fallback; [] = user deleted all → show empty
   let team = site.team;
   try {
     const sanityTeam = await client.fetch(TEAM_QUERY);
-    if (sanityTeam?.length > 0) team = sanityTeam;
+    if (sanityTeam !== null) team = sanityTeam ?? [];
   } catch {}
 
   return (
