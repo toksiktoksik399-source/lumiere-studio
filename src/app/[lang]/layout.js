@@ -29,13 +29,13 @@ export default async function LangLayout({ children, params }) {
   const subtitle = lang === "ru" ? "клиника косметологии" : "cosmetology clinic";
 
   const navLeft = [
-    { href: "#services", label: d.nav.services },
-    { href: "#procedures", label: lang === "ru" ? "Процедуры" : "Procedures" },
-    { href: "#team", label: lang === "ru" ? "Команда" : "Team" },
+    { href: `/${lang}/services`, label: d.nav.services },
+    { href: `/${lang}#procedures`, label: lang === "ru" ? "Процедуры" : "Procedures" },
+    { href: `/${lang}#team`, label: lang === "ru" ? "Команда" : "Team" },
   ];
   const navRight = [
-    { href: "#about", label: d.nav.about },
-    { href: "#contacts", label: d.nav.contacts },
+    { href: `/${lang}#about`, label: d.nav.about },
+    { href: `/${lang}#contacts`, label: d.nav.contacts },
   ];
 
   return (
@@ -58,11 +58,11 @@ export default async function LangLayout({ children, params }) {
               <A key={i.href} href={i.href} className="text-xs tracking-widest uppercase text-[#6b5f50] hover:text-[#b08d57] transition-colors">{i.label}</A>
             ))}
             <LanguageSwitcher lang={lang} />
-            <A href="#contacts" className="rounded-full bg-[#b08d57] hover:bg-[#9a7846] text-white px-5 py-2 text-xs tracking-widest uppercase transition-colors">{d.cta}</A>
+            <A href={`/${lang}#contacts`} className="rounded-full bg-[#b08d57] hover:bg-[#9a7846] text-white px-5 py-2 text-xs tracking-widest uppercase transition-colors">{d.cta}</A>
           </div>
           <div className="lg:hidden flex items-center gap-3">
             <LanguageSwitcher lang={lang} />
-            <A href="#contacts" className="rounded-full bg-[#b08d57] text-white px-4 py-2 text-xs uppercase tracking-wider">{d.cta}</A>
+            <A href={`/${lang}#contacts`} className="rounded-full bg-[#b08d57] text-white px-4 py-2 text-xs uppercase tracking-wider">{d.cta}</A>
           </div>
         </div>
       </header>

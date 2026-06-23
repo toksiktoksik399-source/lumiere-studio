@@ -7,6 +7,7 @@ import SmartImage from "@/components/SmartImage";
 import A from "@/components/A";
 import Carousel from "@/components/Carousel";
 import ServicesAccordion from "@/components/ServicesAccordion";
+import HeroCarousel from "@/components/HeroCarousel";
 
 const ICON_PATHS = [
   "M9 5h6v3H9zM8 8h8l-1 12H9z",
@@ -45,7 +46,7 @@ export default async function HomePage({ params }) {
           </Reveal>
           <Reveal delay={150}>
             <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-[#efe2d2] to-[#e7d3bd] shadow-xl">
-              <SmartImage src={s.heroImageUrl} className="w-full h-full object-cover" />
+              <HeroCarousel images={site.heroImages} />
             </div>
           </Reveal>
         </div>
@@ -185,10 +186,17 @@ export default async function HomePage({ params }) {
           <Reveal>
             <Carousel>
               {site.testimonials.map((r) => (
-                <div key={r._id} className="snap-start shrink-0 w-80 md:w-96 bg-white border border-[#e9ddca] rounded-2xl p-8">
+                <div key={r._id} className="snap-start shrink-0 w-80 md:w-96 bg-white border border-[#e9ddca] rounded-2xl p-8 flex flex-col">
                   <div className="text-[#b08d57] mb-3">{"★".repeat(r.rating || 5)}</div>
-                  <p className="text-[#6b5f50] italic mb-4 leading-relaxed">«{t(r.text, lang)}»</p>
-                  <div className="font-medium text-[#3f372e]">— {r.name}</div>
+                  <p className="text-[#6b5f50] italic mb-6 leading-relaxed flex-1">«{t(r.text, lang)}»</p>
+                  <div className="flex items-center gap-3 border-t border-[#efe6d9] pt-5">
+                    {r.photoUrl && (
+                      <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-[#e7d3bd] to-[#d8bfa0] shrink-0">
+                        <SmartImage src={r.photoUrl} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="font-medium text-[#3f372e]">{r.name}</div>
+                  </div>
                 </div>
               ))}
             </Carousel>
