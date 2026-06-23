@@ -2,86 +2,137 @@
 import { useState, useEffect, useRef } from "react";
 
 const SERVICES = [
-  "Ботокс / Диспорт",
-  "Филлеры губ",
-  "Биоревитализация",
-  "Мезотерапия",
-  "Контурная пластика",
-  "RF-лифтинг InMode",
-  "Фотоомоложение",
-  "Химический пилинг",
-  "Ультразвуковая чистка",
-  "Карбокситерапия",
-  "LPG-массаж",
-  "Кавитация",
-  "Прессотерапия",
-  "Водорослевое обёртывание",
-  "Лазерная эпиляция",
-  "Удаление пигментации",
-  "Фракционное омоложение",
-  "Увлажняющий уход",
-  "Антивозрастной уход",
-  "Массаж лица Гуаша",
+  "Ботокс / Диспорт", "Филлеры губ", "Биоревитализация", "Мезотерапия",
+  "Контурная пластика", "RF-лифтинг InMode", "Фотоомоложение",
+  "Химический пилинг", "Ультразвуковая чистка", "Карбокситерапия",
+  "LPG-массаж", "Кавитация", "Прессотерапия", "Водорослевое обёртывание",
+  "Лазерная эпиляция", "Удаление пигментации", "Фракционное омоложение",
+  "Увлажняющий уход", "Антивозрастной уход", "Массаж лица Гуаша",
   "Другое",
+];
+
+const MASTERS = [
+  "Любой свободный мастер",
+  "Анна Соколова",
+  "Екатерина Павлова",
+  "Марина Орлова",
+  "Диана Михайлова",
+];
+
+const TIME_SLOTS = [
+  "10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30",
+  "14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30",
+  "18:00","18:30","19:00","19:30","20:00","20:30",
 ];
 
 const inputCls = "w-full border border-[#ddd3ca] bg-[#faf6f2] px-4 py-3 text-sm text-[#1a1714] placeholder-[#b8a898] outline-none focus:border-[#b8976a] transition-colors";
 
+function DropDown({ placeholder, header, value, options, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function h(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    if (open) document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full flex items-center justify-between px-4 py-3 border text-sm text-left transition-colors ${
+          open ? "border-[#b8976a] bg-[#faf6f2]" : "border-[#ddd3ca] bg-[#faf6f2] hover:border-[#b8976a]"
+        }`}
+      >
+        <span className={value ? "text-[#1a1714]" : "text-[#b8a898]"}>{value || placeholder}</span>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#b8976a" strokeWidth="2"
+          className={`shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""}`}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-30 w-full top-full left-0 border border-t-0 border-[#b8976a] bg-white shadow-sm max-h-56 overflow-y-auto">
+          <div className="px-4 py-2 bg-[#f5ede8] border-b border-[#ede3da]">
+            <span className="text-[10px] tracking-[0.35em] uppercase text-[#9a8878]">{header}</span>
+          </div>
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => { onChange(opt); setOpen(false); }}
+              className={`w-full text-left px-4 py-3 text-sm border-b border-[#f0e8e0] last:border-0 transition-colors ${
+                value === opt ? "bg-[#c9a898] text-white" : "text-[#1a1714] hover:bg-[#f5ede8] hover:text-[#b8976a]"
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ContactForm({ labels }) {
   const [status, setStatus] = useState("idle");
-  const [form, setForm] = useState({ name: "", phone: "", service: "", customService: "", message: "" });
-  const [dropOpen, setDropOpen] = useState(false);
-  const dropRef = useRef(null);
+  const [form, setForm] = useState({
+    name: "", phone: "", service: "", customService: "",
+    master: "", date: "", time: "", message: "",
+  });
 
-  // Read pre-selected service from localStorage (set by ServicesTab)
+  // Listen both on mount (cross-page) and via event (same-page)
   useEffect(() => {
-    const saved = localStorage.getItem("lumiere_selected_service");
-    if (saved) {
-      setForm(f => ({ ...f, service: saved }));
-      localStorage.removeItem("lumiere_selected_service");
+    function apply(data) {
+      setForm((f) => ({
+        ...f,
+        ...(data.service !== undefined ? { service: data.service } : {}),
+        ...(data.master  !== undefined ? { master:  data.master  } : {}),
+      }));
     }
+
+    // Cross-page: read localStorage on mount
+    const saved = localStorage.getItem("lumiere_book");
+    if (saved) {
+      try { apply(JSON.parse(saved)); } catch {}
+      localStorage.removeItem("lumiere_book");
+    }
+
+    // Same-page: listen for custom event fired by ServicesTab / ServiceItem / MasterBookButton
+    function handler(e) { if (e.detail) apply(e.detail); }
+    window.addEventListener("lumiere-book", handler);
+    return () => window.removeEventListener("lumiere-book", handler);
   }, []);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handler(e) {
-      if (dropRef.current && !dropRef.current.contains(e.target)) {
-        setDropOpen(false);
-      }
-    }
-    if (dropOpen) document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [dropOpen]);
+  const set = (field) => (val) => setForm((f) => ({ ...f, [field]: val }));
+  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-
-  function selectService(name) {
-    setForm(f => ({ ...f, service: name, customService: "" }));
-    setDropOpen(false);
-  }
-
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setStatus("sending");
-    const serviceFinal = form.service === "Другое"
-      ? (form.customService || "Другое")
-      : form.service;
+    const serviceFinal = form.service === "Другое" ? (form.customService || "Другое") : form.service;
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, phone: form.phone, service: serviceFinal, message: form.message }),
+        body: JSON.stringify({
+          name: form.name, phone: form.phone,
+          service: serviceFinal, master: form.master,
+          date: form.date, time: form.time, message: form.message,
+        }),
       });
       if (res.ok) {
         setStatus("success");
-        setForm({ name: "", phone: "", service: "", customService: "", message: "" });
+        setForm({ name: "", phone: "", service: "", customService: "", master: "", date: "", time: "", message: "" });
       } else {
         setStatus("error");
       }
     } catch {
       setStatus("error");
     }
-  };
+  }
 
   if (status === "success") {
     return (
@@ -94,101 +145,59 @@ export default function ContactForm({ labels }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <input
-        name="name"
-        value={form.name}
-        onChange={handleChange}
-        required
-        placeholder={labels.name}
-        className={inputCls}
+      <input name="name"  value={form.name}  onChange={handleChange} required placeholder={labels.name}  className={inputCls} />
+      <input name="phone" value={form.phone} onChange={handleChange} required placeholder={labels.phone} className={inputCls} />
+
+      {/* Услуга */}
+      <DropDown
+        placeholder="— Выберите услугу —"
+        header="Услуга"
+        value={form.service}
+        options={SERVICES}
+        onChange={set("service")}
       />
-      <input
-        name="phone"
-        value={form.phone}
-        onChange={handleChange}
-        required
-        placeholder={labels.phone}
-        className={inputCls}
-      />
-
-      {/* Custom service selector dropdown */}
-      <div ref={dropRef} className="relative">
-        {/* Trigger */}
-        <button
-          type="button"
-          onClick={() => setDropOpen(!dropOpen)}
-          className={`w-full flex items-center justify-between px-4 py-3 border text-sm text-left transition-colors ${
-            dropOpen ? "border-[#b8976a] bg-[#faf6f2]" : "border-[#ddd3ca] bg-[#faf6f2] hover:border-[#b8976a]"
-          }`}
-        >
-          <span className={form.service ? "text-[#1a1714]" : "text-[#b8a898]"}>
-            {form.service || "— Выберите услугу —"}
-          </span>
-          <svg
-            viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#b8976a" strokeWidth="2"
-            className={`shrink-0 ml-2 transition-transform duration-200 ${dropOpen ? "rotate-180" : ""}`}
-          >
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-
-        {/* Dropdown panel */}
-        {dropOpen && (
-          <div className="absolute z-30 w-full top-full left-0 border border-t-0 border-[#b8976a] bg-white shadow-sm max-h-60 overflow-y-auto">
-            {/* Header */}
-            <div className="px-4 py-2 bg-[#f5ede8] border-b border-[#ede3da]">
-              <span className="text-[10px] tracking-[0.35em] uppercase text-[#9a8878]">Выберите услугу</span>
-            </div>
-            {SERVICES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => selectService(s)}
-                className={`w-full text-left px-4 py-3 text-sm border-b border-[#f0e8e0] last:border-0 transition-colors ${
-                  form.service === s
-                    ? "bg-[#c9a898] text-white"
-                    : "text-[#1a1714] hover:bg-[#f5ede8] hover:text-[#b8976a]"
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Custom input when "Другое" selected */}
       {form.service === "Другое" && (
-        <input
-          name="customService"
-          value={form.customService}
-          onChange={handleChange}
-          placeholder="Укажите вашу услугу"
-          className={inputCls}
-          autoFocus
-        />
+        <input name="customService" value={form.customService} onChange={handleChange}
+          placeholder="Укажите вашу услугу" className={inputCls} autoFocus />
       )}
 
-      <textarea
-        name="message"
-        value={form.message}
-        onChange={handleChange}
-        rows={3}
-        placeholder={labels.message}
-        className={inputCls}
+      {/* Мастер */}
+      <DropDown
+        placeholder="— Выберите мастера —"
+        header="Мастер"
+        value={form.master}
+        options={MASTERS}
+        onChange={set("master")}
       />
 
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="w-full bg-[#c9a898] hover:bg-[#b8967a] disabled:opacity-60 text-white text-[10px] tracking-[0.4em] uppercase py-4 transition-colors"
-      >
+      {/* Дата и время */}
+      <div className="grid grid-cols-2 gap-3">
+        <input
+          type="date"
+          name="date"
+          value={form.date}
+          onChange={handleChange}
+          min={new Date().toISOString().split("T")[0]}
+          className={inputCls}
+        />
+        <DropDown
+          placeholder="— Время —"
+          header="Время записи"
+          value={form.time}
+          options={TIME_SLOTS}
+          onChange={set("time")}
+        />
+      </div>
+
+      <textarea name="message" value={form.message} onChange={handleChange} rows={3}
+        placeholder={labels.message} className={inputCls} />
+
+      <button type="submit" disabled={status === "sending"}
+        className="w-full bg-[#c9a898] hover:bg-[#b8967a] disabled:opacity-60 text-white text-[10px] tracking-[0.4em] uppercase py-4 transition-colors">
         {status === "sending" ? labels.sending : labels.submit}
       </button>
 
-      {status === "error" && (
-        <p className="text-[#b8976a] text-xs text-center">{labels.error}</p>
-      )}
+      {status === "error" && <p className="text-[#b8976a] text-xs text-center">{labels.error}</p>}
     </form>
   );
 }

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { site } from "@/content/site";
 import Reveal from "@/components/Reveal";
 import SmartImage from "@/components/SmartImage";
+import MasterBookButton from "@/components/MasterBookButton";
 
 export default async function TeamPage({ params }) {
   const { lang } = await params;
@@ -20,18 +21,15 @@ export default async function TeamPage({ params }) {
         </div>
       </section>
 
-      {/* Team cards — portrait layout, 2 columns on tablet+ */}
       <section className="bg-white py-12 md:py-16">
         <div className="max-w-5xl mx-auto px-5 md:px-8">
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
             {site.team.map((m, i) => (
               <Reveal key={m._id} delay={i * 70}>
                 <div className="border border-[#ede3da] bg-white flex flex-col">
-                  {/* Portrait photo */}
                   <div className="aspect-[4/3] overflow-hidden bg-[#ede3da] w-full">
                     <SmartImage src={m.photoUrl} className="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-700" />
                   </div>
-                  {/* Info */}
                   <div className="p-5 md:p-6 flex flex-col flex-1">
                     <p className="text-[10px] tracking-[0.4em] uppercase text-[#b8976a] mb-2">{m.role}</p>
                     <h2 className="font-display text-xl md:text-2xl text-[#1a1714] mb-1">{m.name}</h2>
@@ -41,12 +39,8 @@ export default async function TeamPage({ params }) {
                       <span className="text-[#6b5f50]">Специализация: </span>{m.spec}
                     </p>
                     <p className="text-xs text-[#9a8878] leading-relaxed mb-5">{m.bio}</p>
-                    <Link
-                      href={`/${lang}#contacts`}
-                      className="inline-flex w-fit items-center gap-2 text-[10px] tracking-[0.35em] uppercase bg-[#c9a898] hover:bg-[#b8967a] text-white px-5 py-2.5 transition-colors"
-                    >
-                      ЗАПИСАТЬСЯ
-                    </Link>
+                    {/* MasterBookButton saves master name and fires event before scroll */}
+                    <MasterBookButton masterName={m.name} lang={lang} />
                   </div>
                 </div>
               </Reveal>

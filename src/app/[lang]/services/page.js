@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { site } from "@/content/site";
 import Reveal from "@/components/Reveal";
+import ServiceItem from "@/components/ServiceItem";
 
 const TAB_ICONS = {
   face:  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5"/><path d="M3 21c0-4 4-7 9-7s9 3 9 7"/></svg>,
@@ -14,7 +15,6 @@ export default async function ServicesPage({ params }) {
 
   return (
     <>
-      {/* Page header */}
       <section className="pt-14 md:pt-20 pb-10 md:pb-16 bg-[#f5ede8]">
         <div className="max-w-5xl mx-auto px-5 md:px-8">
           <Reveal>
@@ -27,7 +27,6 @@ export default async function ServicesPage({ params }) {
         </div>
       </section>
 
-      {/* Categories */}
       {site.serviceCategories.map((cat, ci) => (
         <section
           key={ci}
@@ -46,39 +45,26 @@ export default async function ServicesPage({ params }) {
               </div>
             </Reveal>
 
-            {/* Single-column list — no cramping */}
-            <div className="divide-y divide-[#ede3da]">
+            {/* Interactive items with Записаться button */}
+            <div>
               {cat.items.map((item, ii) => (
-                <Reveal key={ii} delay={ii * 20}>
-                  <div className="flex gap-4 py-4 md:py-5 group hover:bg-[#faf6f2] -mx-2 px-2 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[#1a1714] text-sm leading-snug">{item.name}</p>
-                      {item.desc && (
-                        <p className="text-xs text-[#9a8878] leading-relaxed mt-1 pr-4">{item.desc}</p>
-                      )}
-                    </div>
-                    <p className="text-[#b8976a] text-sm font-medium whitespace-nowrap shrink-0 pt-0.5">{item.price}</p>
-                  </div>
-                </Reveal>
+                <ServiceItem key={ii} item={item} lang={lang} />
               ))}
             </div>
           </div>
         </section>
       ))}
 
-      {/* CTA */}
       <section className="py-16 md:py-20 bg-[#1a1714]">
         <div className="max-w-3xl mx-auto px-5 md:px-8 text-center">
           <Reveal>
             <p className="text-[10px] tracking-[0.45em] uppercase text-[#b8976a] mb-4">Персональный подбор</p>
-            <h2 className="font-display font-light text-3xl md:text-5xl text-white mb-5">
-              НЕ ЗНАЕТЕ С ЧЕГО НАЧАТЬ?
-            </h2>
+            <h2 className="font-display font-light text-3xl md:text-5xl text-white mb-5">НЕ ЗНАЕТЕ С ЧЕГО НАЧАТЬ?</h2>
             <p className="text-[#9a8878] text-sm mb-8 max-w-sm mx-auto leading-relaxed">
               Запишитесь на бесплатную консультацию — подберём процедуры под ваш запрос.
             </p>
             <Link
-              href={`/${lang}#contacts`}
+              href={`/${lang}/contacts`}
               className="inline-flex items-center gap-4 bg-[#c9a898] hover:bg-[#b8967a] text-white text-[10px] tracking-[0.4em] uppercase px-8 py-4 transition-colors"
             >
               ЗАПИСАТЬСЯ НА КОНСУЛЬТАЦИЮ
