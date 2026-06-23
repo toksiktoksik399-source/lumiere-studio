@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'; // Always fetch fresh Sanity data
+export const dynamic = 'force-dynamic';
 
 import Link from "next/link";
 import { site } from "@/content/site";
@@ -8,6 +8,22 @@ import Carousel from "@/components/Carousel";
 import ServicesTab from "@/components/ServicesTab";
 import ContactForm from "@/components/ContactForm";
 import { dict } from "@/lib/dictionaries";
+import { client } from "@/sanity/lib/client";
+import { TEAM_QUERY, TESTIMONIALS_QUERY, SERVICES_QUERY } from "@/lib/queries";
+
+const CATS = ["injectable","hardware","therapeutic","laser","face","body","laser","care"];
+const CAT_TITLES = {
+  face: {ru:"Лицо",en:"Face"}, body: {ru:"Тело",en:"Body"},
+  laser: {ru:"Лазер",en:"Laser"}, care: {ru:"Уход",en:"Care"},
+};
+
+async function fetchFromSanity() {
+  const safe = async (q) => { try { return await client.fetch(q); } catch { return null; } };
+  const [team, testimonials, services] = await Promise.all([
+    safe(TEAM_QUERY), safe(TESTIMONIALS_QUERY), safe(SERVICES_QUERY),
+  ]);
+  return { team, testimonials, services };
+}
 
 // Feature icons
 const ICONS = {
@@ -20,6 +36,21 @@ const ICONS = {
 export default async function HomePage({ params }) {
   const { lang } = await params;
   const d = dict[lang] || dict.ru;
+
+  const { team: sanityTeam, testimonials: sanityReviews, services: sanityServices } = await fetchFromSanity();
+
+  const teamMembers = sanityTeam?.length > 0 ? sanityTeam : site.team;
+  const reviews     = sanityReviews?.length > 0 ? sanityReviews : site.testimonials;
+
+  // Build services object for ServicesTab from Sanity or site.js
+  let servicesObj = site.services;
+  if (sanityServices?.length > 0) {
+    servicesObj = { face: [], body: [], laser: [], care: [] };
+    sanityServices.forEach(s => {
+      const cat = s.category || "face";
+      if (servicesObj[cat]) servicesObj[cat].push({ name: s.title, price: s.price });
+    });
+  }
 
   return (
     <>
@@ -87,7 +118,7 @@ export default async function HomePage({ params }) {
           <Reveal>
             <p className="text-[10px] tracking-[0.45em] uppercase text-[#b8976a] mb-4">Что мы делаем</p>
             <h2 className="font-display font-light text-5xl md:text-6xl text-[#1a1714] mb-12">НАШИ УСЛУГИ</h2>
-            <ServicesTab services={site.services} lang={lang} />
+            <ServicesTab services={servicesObj} lang={lang} />
           </Reveal>
 
           {/* Right: staggered photos + info block */}
@@ -159,15 +190,15 @@ export default async function HomePage({ params }) {
             </div>
           </Reveal>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5 md:gap-7">
-            {site.team.map((m, i) => (
-              <Reveal key={m._id} delay={i * 80}>
+            {teamMembers.map((m, i) => (
+              <Reveal key={m._id || i} delay={i * 80}>
                 <div>
                   <div className="aspect-[3/4] bg-[#ede3da] overflow-hidden mb-4 rounded-sm">
                     <SmartImage src={m.photoUrl} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                   </div>
                   <p className="font-display text-base md:text-lg text-[#1a1714]">{m.name}</p>
-                  <p className="text-[10px] tracking-wider uppercase text-[#b8976a] mt-1">{m.role}</p>
-                  <p className="text-xs text-[#9a8878] mt-1">{m.experience}</p>
+                  <p className="text-[10px] tracking-wider uppercase text-[#b8976a] mt-1">{typeof m.role === "object" ? m.role.ru : m.role}</p>
+                  <p className="text-xs text-[#9a8878] mt-1">{typeof m.experience === "object" ? m.experience.ru : m.experience}</p>
                 </div>
               </Reveal>
             ))}
@@ -186,10 +217,10 @@ export default async function HomePage({ params }) {
           </Reveal>
           <Reveal>
             <Carousel>
-              {site.testimonials.map((r) => (
-                <div key={r._id} className="snap-start shrink-0 w-[85vw] sm:w-80 md:w-96 bg-[#221d19] border border-[#2d2520] p-8 flex flex-col">
+              {reviews.map((r, ri) => (
+                <div key={r._id || ri} className="snap-start shrink-0 w-[85vw] sm:w-80 md:w-96 bg-[#221d19] border border-[#2d2520] p-8 flex flex-col">
                   <div className="text-[#b8976a] mb-4 text-sm tracking-widest">{"★".repeat(r.rating || 5)}</div>
-                  <p className="text-[#c4b49a] text-sm leading-relaxed italic mb-6 flex-1">«{r.text}»</p>
+                  <p className="text-[#c4b49a] text-sm leading-relaxed italic mb-6 flex-1">«{typeof r.text === "object" ? r.text.ru : r.text}»</p>
                   <div className="flex items-center gap-3 border-t border-[#2d2520] pt-5">
                     {r.photoUrl && (
                       <div className="w-10 h-10 rounded-full overflow-hidden bg-[#3d3229] shrink-0">

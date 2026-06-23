@@ -5,9 +5,17 @@ import { site } from "@/content/site";
 import Reveal from "@/components/Reveal";
 import SmartImage from "@/components/SmartImage";
 import MasterBookButton from "@/components/MasterBookButton";
+import { client } from "@/sanity/lib/client";
+import { TEAM_QUERY } from "@/lib/queries";
 
 export default async function TeamPage({ params }) {
   const { lang } = await params;
+
+  let team = site.team;
+  try {
+    const sanityTeam = await client.fetch(TEAM_QUERY);
+    if (sanityTeam?.length > 0) team = sanityTeam;
+  } catch {}
 
   return (
     <>
@@ -26,7 +34,7 @@ export default async function TeamPage({ params }) {
       <section className="bg-white py-12 md:py-16">
         <div className="max-w-5xl mx-auto px-5 md:px-8">
           <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
-            {site.team.map((m, i) => (
+            {team.map((m, i) => (
               <Reveal key={m._id} delay={i * 70}>
                 <div className="border border-[#ede3da] bg-white flex flex-col">
                   <div className="aspect-[4/3] overflow-hidden bg-[#ede3da] w-full">

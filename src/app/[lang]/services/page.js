@@ -4,6 +4,8 @@ import Link from "next/link";
 import { site } from "@/content/site";
 import Reveal from "@/components/Reveal";
 import ServiceItem from "@/components/ServiceItem";
+import { client } from "@/sanity/lib/client";
+import { SERVICES_QUERY } from "@/lib/queries";
 
 const TAB_ICONS = {
   face:  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="5"/><path d="M3 21c0-4 4-7 9-7s9 3 9 7"/></svg>,
@@ -14,6 +16,19 @@ const TAB_ICONS = {
 
 export default async function ServicesPage({ params }) {
   const { lang } = await params;
+
+  // Build categories from Sanity, fallback to site.js
+  let categories = site.serviceCategories;
+  try {
+    const svc = await client.fetch(SERVICES_QUERY);
+    if (svc?.length > 0) {
+      const map = { face: [], body: [], laser: [], care: [] };
+      const titles = { face: "Лицо", body: "Тело", laser: "Лазер", care: "Уход" };
+      svc.forEach(s => { if (map[s.category]) map[s.category].push({ name: typeof s.title === "object" ? s.title.ru : s.title, price: s.price, desc: typeof s.description === "object" ? s.description.ru : s.description }); });
+      const built = Object.entries(map).filter(([, v]) => v.length > 0).map(([k, v]) => ({ title: titles[k], tab: k, items: v }));
+      if (built.length > 0) categories = built;
+    }
+  } catch {}
 
   return (
     <>
@@ -29,7 +44,7 @@ export default async function ServicesPage({ params }) {
         </div>
       </section>
 
-      {site.serviceCategories.map((cat, ci) => (
+      {categories.map((cat, ci) => (
         <section
           key={ci}
           id={cat.tab}
