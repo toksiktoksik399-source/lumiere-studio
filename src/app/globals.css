@@ -12,7 +12,12 @@
   --rose: #c9a898;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -22,9 +27,6 @@ body {
 }
 
 .font-display { font-family: var(--font-display), Georgia, serif; }
-
-/* Prevent text size adjustment on orientation change (iOS) */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* Reveal animation */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.85s ease, transform 0.85s ease; }
@@ -42,19 +44,20 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Feature dividers — desktop: vertical between items */
+/* Feature grid dividers
+   Desktop (≥1024px): 4 columns → vertical divider between all items */
 .feature-grid > * + * { border-left: 1px solid var(--cream-3); }
 
-/* Mobile 2-column: vertical between columns, horizontal between rows */
-@media (max-width: 640px) {
+/* Tablet & mobile (< 1024px): 2 columns → vertical between columns, horizontal between rows */
+@media (max-width: 1023px) {
   .feature-grid > * + * { border-left: none; border-top: none; }
   .feature-grid > *:nth-child(even)  { border-left: 1px solid var(--cream-3); }
   .feature-grid > *:nth-child(n+3)   { border-top: 1px solid var(--cream-3); }
 }
 
-/* Tap highlight — убираем синюю подсветку на iOS/Android */
+/* Remove tap highlight on iOS/Android */
 * { -webkit-tap-highlight-color: transparent; }
 
-/* Buttons: убираем outline на mobile тач */
+/* Keyboard focus visible, not on touch */
 button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 button:focus:not(:focus-visible) { outline: none; }

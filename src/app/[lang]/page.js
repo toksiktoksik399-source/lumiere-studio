@@ -56,12 +56,12 @@ export default async function HomePage({ params }) {
       {/* ── HERO ───────────────────────────────────────── */}
       <section className="relative flex flex-col md:flex-row min-h-[100svh]">
         {/* Left: text */}
-        <div className="order-2 md:order-1 md:w-[44%] lg:w-[40%] bg-[#f5ede8] flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 py-10 md:py-24 relative z-10">
+        <div className="order-2 md:order-1 md:w-[44%] lg:w-[40%] bg-[#f5ede8] flex flex-col justify-center px-6 sm:px-10 md:px-10 lg:px-12 py-10 md:py-24 relative z-10">
           <Reveal>
             <p className="text-[9px] sm:text-[10px] tracking-[0.4em] uppercase text-[#b8976a] mb-4 md:mb-8">
               Студия красоты · Lumière
             </p>
-            <h1 className="font-display font-light text-[2.6rem] sm:text-6xl md:text-6xl lg:text-8xl leading-[0.92] text-[#1a1714] mb-5 md:mb-8">
+            <h1 className="font-display font-light text-[2.4rem] sm:text-5xl md:text-4xl lg:text-5xl xl:text-6xl leading-[0.92] text-[#1a1714] mb-5 md:mb-8">
               {site.heroHeading.map((line, i) => (
                 <span key={i} className="block">{line}</span>
               ))}
@@ -95,10 +95,10 @@ export default async function HomePage({ params }) {
 
       {/* ── FEATURES ──────────────────────────────────── */}
       <section className="bg-[#ede3da] border-y border-[#ddd3ca]">
-        <div className="max-w-7xl mx-auto feature-grid grid grid-cols-2 md:grid-cols-4">
+        <div className="max-w-7xl mx-auto feature-grid grid grid-cols-2 lg:grid-cols-4">
           {site.features.map((f, i) => (
             <Reveal key={i} delay={i * 60}>
-              <div className="flex gap-3 items-start px-4 sm:px-6 md:px-8 py-5 md:py-8">
+              <div className="flex gap-3 items-start px-4 sm:px-6 lg:px-4 py-5 md:py-7 lg:py-8">
                 <div className="text-[#b8976a] shrink-0 mt-0.5">{ICONS[f.icon]}</div>
                 <div>
                   <div className="text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.3em] uppercase text-[#1a1714] font-medium mb-1 leading-tight">{f.title}</div>
