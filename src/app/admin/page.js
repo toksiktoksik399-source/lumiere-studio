@@ -75,29 +75,47 @@ function Label({ children }) {
 
 /* ─── Seed button logic ──────────────────────────── */
 function SeedBanner({ onSeeded }) {
-  const [busy, setBusy] = useState(false);
-  const [msg,  setMsg]  = useState("");
+  const [busy,    setBusy]    = useState(false);
+  const [msg,     setMsg]     = useState("");
+  const [isEmpty, setIsEmpty] = useState(null); // null=checking
+
+  // Check if DB is empty (no masters)
+  useEffect(() => {
+    fetch("/api/admin/masters")
+      .then(r => r.json())
+      .then(d => setIsEmpty((d.items?.length ?? 0) === 0))
+      .catch(() => setIsEmpty(false));
+  }, []);
 
   async function seed() {
-    if (!confirm("Загрузить данные сайта в базу? Существующие записи будут удалены.")) return;
+    if (!confirm("Заполнить базу начальными данными? Это нужно сделать только один раз при первом запуске.")) return;
     setBusy(true);
     const res = await fetch("/api/admin/seed", { method: "POST" });
     const d   = await res.json();
     setBusy(false);
-    if (d.ok) { setMsg(`Загружено: мастеров ${d.created.team}, отзывов ${d.created.reviews}, услуг ${d.created.services}`); onSeeded(); }
-    else       setMsg("Ошибка: " + (d.error || "неизвестно"));
+    if (d.ok) {
+      setMsg(`Загружено: ${d.created.team} мастеров, ${d.created.reviews} отзывов, ${d.created.services} услуг`);
+      setIsEmpty(false);
+      onSeeded();
+    } else {
+      setMsg("Ошибка: " + (d.error || "неизвестно"));
+    }
   }
 
   return (
-    <div className="bg-green-50 border border-green-200 rounded p-4 mb-6 flex items-center justify-between gap-4 flex-wrap">
+    <div className="bg-green-50 border border-green-200 p-4 mb-6 flex items-start justify-between gap-4 flex-wrap">
       <div>
         <p className="text-green-800 text-sm font-semibold">✓ База данных подключена</p>
-        <p className="text-green-700 text-xs mt-0.5">{msg || "Нажмите кнопку, чтобы загрузить все данные сайта"}</p>
+        <p className="text-green-700 text-xs mt-0.5">
+          {msg || (isEmpty === null ? "Проверяем данные..." : isEmpty ? "База пустая — загрузите начальные данные" : "Данные сохранены. Изменения на сайте отображаются сразу.")}
+        </p>
       </div>
-      <button onClick={seed} disabled={busy}
-        className="shrink-0 bg-green-700 hover:bg-green-800 disabled:opacity-40 text-white text-[10px] tracking-widest uppercase px-5 py-2.5 transition-colors">
-        {busy ? "Загружаем..." : "⬆ Загрузить данные"}
-      </button>
+      {isEmpty && (
+        <button onClick={seed} disabled={busy}
+          className="shrink-0 bg-green-700 hover:bg-green-800 disabled:opacity-40 text-white text-[10px] tracking-widest uppercase px-5 py-2.5 transition-colors">
+          {busy ? "Загружаем..." : "⬆ Загрузить начальные данные"}
+        </button>
+      )}
     </div>
   );
 }

@@ -57,26 +57,26 @@ export default async function HomePage({ params }) {
       {/* ── HERO ───────────────────────────────────────── */}
       <section className="relative flex flex-col md:flex-row min-h-[100svh]">
         {/* Left: text */}
-        <div className="order-2 md:order-1 md:w-[44%] lg:w-[40%] bg-[#f5ede8] flex flex-col justify-center px-8 sm:px-12 md:px-14 lg:px-20 py-16 md:py-24 relative z-10">
+        <div className="order-2 md:order-1 md:w-[44%] lg:w-[40%] bg-[#f5ede8] flex flex-col justify-center px-6 sm:px-10 md:px-14 lg:px-20 py-12 md:py-24 relative z-10">
           <Reveal>
-            <p className="text-[10px] tracking-[0.45em] uppercase text-[#b8976a] mb-8">
+            <p className="text-[9px] sm:text-[10px] tracking-[0.4em] uppercase text-[#b8976a] mb-5 md:mb-8">
               Студия красоты · Lumière
             </p>
-            <h1 className="font-display font-light text-6xl sm:text-7xl md:text-7xl lg:text-8xl leading-[0.92] text-[#1a1714] mb-8">
+            <h1 className="font-display font-light text-5xl sm:text-6xl md:text-6xl lg:text-8xl leading-[0.92] text-[#1a1714] mb-5 md:mb-8">
               {site.heroHeading.map((line, i) => (
                 <span key={i} className="block">{line}</span>
               ))}
             </h1>
-            <p className="text-[#6b5f50] text-sm mb-10 max-w-xs leading-relaxed">
+            <p className="text-[#6b5f50] text-sm mb-7 md:mb-10 max-w-xs leading-relaxed">
               {site.heroSubheading}
             </p>
             <Link
               href={`/${lang}#contacts`}
-              className="inline-flex w-fit items-center gap-4 bg-[#c9a898] hover:bg-[#b8967a] text-white text-[10px] tracking-[0.4em] uppercase px-8 py-4 transition-colors"
+              className="inline-flex w-fit items-center gap-3 bg-[#c9a898] hover:bg-[#b8967a] text-white text-[10px] tracking-[0.3em] md:tracking-[0.4em] uppercase px-6 md:px-8 py-3.5 md:py-4 transition-colors"
             >
               ЗАПИСАТЬСЯ ОНЛАЙН
             </Link>
-            <div className="flex items-center gap-4 mt-12 text-[10px] tracking-[0.35em] uppercase text-[#9a8878]">
+            <div className="hidden sm:flex items-center gap-4 mt-10 md:mt-12 text-[10px] tracking-[0.35em] uppercase text-[#9a8878]">
               <span className="w-8 h-px bg-[#b8976a]" />
               ПРОКРУТИТЕ ВНИЗ
             </div>
@@ -84,13 +84,13 @@ export default async function HomePage({ params }) {
         </div>
 
         {/* Right: hero image */}
-        <div className="order-1 md:order-2 flex-1 relative overflow-hidden min-h-[55vw] md:min-h-0">
+        <div className="order-1 md:order-2 flex-1 relative overflow-hidden" style={{minHeight: "min(50vw, 320px)"}}>
           <img
             src={site.heroImage}
             alt="Lumière — студия красоты"
             className="absolute inset-0 w-full h-full object-cover object-top"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#f5ede8]/30 to-transparent md:hidden" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5ede8]/20 md:hidden" />
         </div>
       </section>
 
@@ -99,11 +99,11 @@ export default async function HomePage({ params }) {
         <div className="max-w-7xl mx-auto feature-grid grid grid-cols-2 md:grid-cols-4">
           {site.features.map((f, i) => (
             <Reveal key={i} delay={i * 60}>
-              <div className="flex gap-4 items-start px-8 py-8">
-                <div className="text-[#b8976a] shrink-0 mt-0.5">{ICONS[f.icon]}</div>
+              <div className="flex gap-3 md:gap-4 items-start px-4 sm:px-6 md:px-8 py-6 md:py-8">
+                <div className="text-[#b8976a] shrink-0 mt-0.5 hidden sm:block">{ICONS[f.icon]}</div>
                 <div>
-                  <div className="text-[10px] tracking-[0.3em] uppercase text-[#1a1714] font-medium mb-1">{f.title}</div>
-                  <div className="text-xs text-[#9a8878]">{f.sub}</div>
+                  <div className="text-[9px] sm:text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase text-[#1a1714] font-medium mb-1 leading-tight">{f.title}</div>
+                  <div className="text-xs text-[#9a8878] hidden sm:block">{f.sub}</div>
                 </div>
               </div>
             </Reveal>

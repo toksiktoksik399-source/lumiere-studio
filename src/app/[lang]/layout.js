@@ -33,14 +33,14 @@ export default async function LangLayout({ children, params }) {
             <Link href={`/${lang}/about`}    className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">САЛОНЫ</Link>
           </nav>
 
-          {/* Logo — always returns to homepage */}
-          <a href={`/${lang}`} className="text-center shrink-0 flex flex-col items-center hover:opacity-80 transition-opacity">
-            <div className="flex items-center gap-2">
-              <span className="text-[#b8976a] text-base font-light">—</span>
-              <span className="font-display text-2xl md:text-3xl tracking-[0.35em] text-[#1a1714]">LUMIÈRE</span>
-              <span className="text-[#b8976a] text-base font-light">—</span>
+          {/* Logo */}
+          <a href={`/${lang}`} className="text-center shrink-0 flex flex-col items-center hover:opacity-80 transition-opacity mx-auto lg:mx-0">
+            <div className="flex items-center gap-1.5 md:gap-2">
+              <span className="text-[#b8976a] text-sm md:text-base font-light">—</span>
+              <span className="font-display text-xl md:text-2xl lg:text-3xl tracking-[0.25em] md:tracking-[0.35em] text-[#1a1714]">LUMIÈRE</span>
+              <span className="text-[#b8976a] text-sm md:text-base font-light">—</span>
             </div>
-            <div className="text-[9px] tracking-[0.45em] uppercase text-[#b8976a] -mt-0.5">студия красоты</div>
+            <div className="text-[8px] md:text-[9px] tracking-[0.4em] uppercase text-[#b8976a] -mt-0.5">студия красоты</div>
           </a>
 
           {/* Right nav + CTA */}

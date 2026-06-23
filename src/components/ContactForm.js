@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 
-const SERVICES = [
+const DEFAULT_SERVICES = [
   "Ботокс / Диспорт", "Филлеры губ", "Биоревитализация", "Мезотерапия",
   "Контурная пластика", "RF-лифтинг InMode", "Фотоомоложение",
   "Химический пилинг", "Ультразвуковая чистка", "Карбокситерапия",
@@ -11,12 +11,9 @@ const SERVICES = [
   "Другое",
 ];
 
-const MASTERS = [
+const DEFAULT_MASTERS = [
   "Любой свободный мастер",
-  "Анна Соколова",
-  "Екатерина Павлова",
-  "Марина Орлова",
-  "Диана Михайлова",
+  "Анна Соколова", "Екатерина Павлова", "Марина Орлова", "Диана Михайлова",
 ];
 
 const TIME_SLOTS = [
@@ -27,6 +24,7 @@ const TIME_SLOTS = [
 
 const inputCls = "w-full border border-[#ddd3ca] bg-[#faf6f2] px-4 py-3 text-sm text-[#1a1714] placeholder-[#b8a898] outline-none focus:border-[#b8976a] transition-colors";
 
+/* ─── Custom Dropdown ─────────────────────────── */
 function DropDown({ placeholder, header, value, options, onChange }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -41,14 +39,14 @@ function DropDown({ placeholder, header, value, options, onChange }) {
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         className={`w-full flex items-center justify-between px-4 py-3 border text-sm text-left transition-colors ${
           open ? "border-[#b8976a] bg-[#faf6f2]" : "border-[#ddd3ca] bg-[#faf6f2] hover:border-[#b8976a]"
         }`}
       >
         <span className={value ? "text-[#1a1714]" : "text-[#b8a898]"}>{value || placeholder}</span>
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#b8976a" strokeWidth="2"
-          className={`shrink-0 ml-2 transition-transform ${open ? "rotate-180" : ""}`}>
+          className={`shrink-0 ml-2 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
           <polyline points="6 9 12 15 18 9"/>
         </svg>
       </button>
@@ -76,6 +74,7 @@ function DropDown({ placeholder, header, value, options, onChange }) {
   );
 }
 
+/* ─── Main Form ───────────────────────────────── */
 export default function ContactForm({ labels }) {
   const [status, setStatus] = useState("idle");
   const [form, setForm] = useState({
@@ -83,31 +82,53 @@ export default function ContactForm({ labels }) {
     master: "", date: "", time: "", message: "",
   });
 
-  // Listen both on mount (cross-page) and via event (same-page)
+  // Dynamic lists from Sanity
+  const [masters,  setMasters]  = useState(DEFAULT_MASTERS);
+  const [services, setServices] = useState(DEFAULT_SERVICES);
+
+  useEffect(() => {
+    // Load masters dynamically from Sanity
+    fetch("/api/admin/masters")
+      .then(r => r.json())
+      .then(d => {
+        if (d.items?.length > 0) {
+          setMasters(["Любой свободный мастер", ...d.items.map(m => m.name).filter(Boolean)]);
+        }
+      })
+      .catch(() => {});
+
+    // Load services dynamically from Sanity
+    fetch("/api/admin/services")
+      .then(r => r.json())
+      .then(d => {
+        if (d.items?.length > 0) {
+          const names = d.items
+            .map(s => (typeof s.title === "object" ? s.title?.ru : s.title) || "")
+            .filter(Boolean);
+          if (names.length > 0) setServices([...names, "Другое"]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Pre-fill from ServicesTab / MasterBookButton via event or localStorage
   useEffect(() => {
     function apply(data) {
-      setForm((f) => ({
+      setForm(f => ({
         ...f,
         ...(data.service !== undefined ? { service: data.service } : {}),
         ...(data.master  !== undefined ? { master:  data.master  } : {}),
       }));
     }
-
-    // Cross-page: read localStorage on mount
     const saved = localStorage.getItem("lumiere_book");
-    if (saved) {
-      try { apply(JSON.parse(saved)); } catch {}
-      localStorage.removeItem("lumiere_book");
-    }
-
-    // Same-page: listen for custom event fired by ServicesTab / ServiceItem / MasterBookButton
+    if (saved) { try { apply(JSON.parse(saved)); } catch {} localStorage.removeItem("lumiere_book"); }
     function handler(e) { if (e.detail) apply(e.detail); }
     window.addEventListener("lumiere-book", handler);
     return () => window.removeEventListener("lumiere-book", handler);
   }, []);
 
-  const set = (field) => (val) => setForm((f) => ({ ...f, [field]: val }));
-  const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const set = (field) => (val) => setForm(f => ({ ...f, [field]: val }));
+  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -125,13 +146,9 @@ export default function ContactForm({ labels }) {
       });
       if (res.ok) {
         setStatus("success");
-        setForm({ name: "", phone: "", service: "", customService: "", master: "", date: "", time: "", message: "" });
-      } else {
-        setStatus("error");
-      }
-    } catch {
-      setStatus("error");
-    }
+        setForm({ name:"", phone:"", service:"", customService:"", master:"", date:"", time:"", message:"" });
+      } else { setStatus("error"); }
+    } catch { setStatus("error"); }
   }
 
   if (status === "success") {
@@ -148,12 +165,12 @@ export default function ContactForm({ labels }) {
       <input name="name"  value={form.name}  onChange={handleChange} required placeholder={labels.name}  className={inputCls} />
       <input name="phone" value={form.phone} onChange={handleChange} required placeholder={labels.phone} className={inputCls} />
 
-      {/* Услуга */}
+      {/* Услуга — динамически из Sanity */}
       <DropDown
         placeholder="— Выберите услугу —"
         header="Услуга"
         value={form.service}
-        options={SERVICES}
+        options={services}
         onChange={set("service")}
       />
       {form.service === "Другое" && (
@@ -161,27 +178,25 @@ export default function ContactForm({ labels }) {
           placeholder="Укажите вашу услугу" className={inputCls} autoFocus />
       )}
 
-      {/* Мастер */}
+      {/* Мастер — динамически из Sanity */}
       <DropDown
         placeholder="— Выберите мастера —"
         header="Мастер"
         value={form.master}
-        options={MASTERS}
+        options={masters}
         onChange={set("master")}
       />
 
-      {/* Дата и время — stack on mobile, side by side on sm+ */}
+      {/* Дата и время */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 relative">
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            min={new Date().toISOString().split("T")[0]}
-            className={`${inputCls} w-full`}
-          />
-        </div>
+        <input
+          type="date"
+          name="date"
+          value={form.date}
+          onChange={handleChange}
+          min={new Date().toISOString().split("T")[0]}
+          className={`${inputCls} flex-1`}
+        />
         <div className="flex-1">
           <DropDown
             placeholder="— Время —"
@@ -200,7 +215,6 @@ export default function ContactForm({ labels }) {
         className="w-full bg-[#c9a898] hover:bg-[#b8967a] disabled:opacity-60 text-white text-[10px] tracking-[0.4em] uppercase py-4 transition-colors">
         {status === "sending" ? labels.sending : labels.submit}
       </button>
-
       {status === "error" && <p className="text-[#b8976a] text-xs text-center">{labels.error}</p>}
     </form>
   );
