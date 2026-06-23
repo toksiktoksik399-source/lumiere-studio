@@ -399,9 +399,20 @@ export default function AdminPage() {
             <span className="font-display text-xl tracking-[0.3em] text-white">LUMIÈRE</span>
             <span className="text-[#4a3f38] text-xs hidden sm:block">/ Панель управления</span>
           </div>
-          <Link href="/ru" className="text-[#6b5f50] hover:text-white text-[10px] tracking-widest uppercase transition-colors">
-            ← На сайт
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/ru" className="text-[#6b5f50] hover:text-white text-[10px] tracking-widest uppercase transition-colors">
+              ← На сайт
+            </Link>
+            <button
+              onClick={async () => {
+                await fetch("/api/admin/auth", { method: "DELETE" });
+                window.location.href = "/admin/login";
+              }}
+              className="border border-[#3d3229] text-[#6b5f50] hover:border-[#b8976a] hover:text-[#b8976a] text-[10px] tracking-widest uppercase px-3 py-1.5 transition-colors"
+            >
+              Выйти
+            </button>
+          </div>
         </div>
       </header>
 
