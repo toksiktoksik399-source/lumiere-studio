@@ -316,10 +316,10 @@ export default function AdminPage() {
   const [sanityOk, setSanityOk] = useState(null); // null = loading
 
   useEffect(() => {
-    // Check if Sanity is configured by pinging one of the API routes
-    fetch("/api/admin/masters")
+    // Use dedicated ping endpoint — reliable regardless of document count
+    fetch("/api/admin/ping")
       .then((r) => r.json())
-      .then((d) => setSanityOk(d.source === "sanity"))
+      .then((d) => setSanityOk(d.ok === true))
       .catch(() => setSanityOk(false));
   }, []);
 
