@@ -43,5 +43,7 @@ body {
 .feature-grid > * + * { border-left: 1px solid var(--cream-3); }
 
 @media (max-width: 640px) {
-  .feature-grid > * + * { border-left: none; border-top: 1px solid var(--cream-3); }
+  .feature-grid > * + * { border-left: none; border-top: none; }
+  .feature-grid > *:nth-child(even) { border-left: 1px solid var(--cream-3); }
+  .feature-grid > *:nth-child(n+3) { border-top: 1px solid var(--cream-3); }
 }

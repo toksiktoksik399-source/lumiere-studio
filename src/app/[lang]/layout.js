@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/content/site";
+import { dict } from "@/lib/dictionaries";
 import Intro from "@/components/Intro";
 import MobileMenu from "@/components/MobileMenu";
 
@@ -10,12 +11,14 @@ export function generateStaticParams() {
 
 export default async function LangLayout({ children, params }) {
   const { lang } = await params;
+  const d = dict[lang] || dict.ru;
+  const otherLang = lang === "ru" ? "en" : "ru";
 
   const navItems = [
-    { href: `/${lang}/services`, label: "УСЛУГИ" },
-    { href: `/${lang}/team`,     label: "МАСТЕРА" },
-    { href: `/${lang}/about`,    label: "О НАС" },
-    { href: `/${lang}#contacts`, label: "КОНТАКТЫ" },
+    { href: `/${lang}/services`, label: d.nav.services.toUpperCase() },
+    { href: `/${lang}/team`,     label: lang === "ru" ? "МАСТЕРА" : "MASTERS" },
+    { href: `/${lang}/about`,    label: d.nav.about.toUpperCase() },
+    { href: `/${lang}#contacts`, label: d.nav.contacts.toUpperCase() },
   ];
 
   return (
@@ -28,9 +31,9 @@ export default async function LangLayout({ children, params }) {
 
           {/* Left nav */}
           <nav className="hidden lg:flex items-center gap-8 flex-1">
-            <Link href={`/${lang}/services`} className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">УСЛУГИ</Link>
-            <Link href={`/${lang}/team`}     className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">МАСТЕРА</Link>
-            <Link href={`/${lang}/about`}    className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">САЛОНЫ</Link>
+            <Link href={`/${lang}/services`} className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">{d.nav.services}</Link>
+            <Link href={`/${lang}/team`}     className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">{lang === "ru" ? "МАСТЕРА" : "MASTERS"}</Link>
+            <Link href={`/${lang}/about`}    className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">{d.nav.about}</Link>
           </nav>
 
           {/* Logo */}
@@ -40,24 +43,25 @@ export default async function LangLayout({ children, params }) {
               <span className="font-display text-xl md:text-2xl lg:text-3xl tracking-[0.25em] md:tracking-[0.35em] text-[#1a1714]">LUMIÈRE</span>
               <span className="text-[#b8976a] text-sm md:text-base font-light">—</span>
             </div>
-            <div className="text-[8px] md:text-[9px] tracking-[0.4em] uppercase text-[#b8976a] -mt-0.5">студия красоты</div>
+            <div className="text-[8px] md:text-[9px] tracking-[0.4em] uppercase text-[#b8976a] -mt-0.5">{lang === "ru" ? "студия красоты" : "beauty studio"}</div>
           </a>
 
-          {/* Right nav + CTA */}
+          {/* Right nav + lang switcher + CTA */}
           <div className="hidden lg:flex items-center gap-8 flex-1 justify-end">
-            <Link href={`/${lang}/about`}    className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">О НАС</Link>
-            <Link href={`/${lang}#contacts`} className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">КОНТАКТЫ</Link>
+            <Link href={`/${lang}#contacts`} className="text-[10px] tracking-[0.35em] uppercase text-[#6b5f50] hover:text-[#1a1714] transition-colors">{d.nav.contacts}</Link>
+            <Link href={`/${otherLang}${""}`} className="text-[10px] tracking-[0.25em] uppercase text-[#9a8878] hover:text-[#1a1714] transition-colors border border-[#ddd3ca] px-2.5 py-1">{otherLang.toUpperCase()}</Link>
             <Link
               href={`/${lang}#contacts`}
               className="bg-[#c9a898] hover:bg-[#b8967a] text-white text-[10px] tracking-[0.35em] uppercase px-6 py-3 transition-colors"
             >
-              ЗАПИСАТЬСЯ
+              {d.cta.toUpperCase()}
             </Link>
           </div>
 
           {/* Mobile */}
-          <div className="lg:hidden flex items-center">
-            <MobileMenu lang={lang} navItems={navItems} cta="ЗАПИСАТЬСЯ" />
+          <div className="lg:hidden flex items-center gap-3">
+            <Link href={`/${otherLang}`} className="text-[10px] tracking-[0.25em] uppercase text-[#9a8878] hover:text-[#1a1714] transition-colors border border-[#ddd3ca] px-2 py-1">{otherLang.toUpperCase()}</Link>
+            <MobileMenu lang={lang} navItems={navItems} cta={d.cta.toUpperCase()} />
           </div>
         </div>
       </header>
@@ -88,10 +92,10 @@ export default async function LangLayout({ children, params }) {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-between gap-4 text-[10px] tracking-widest uppercase text-[#4a3f38]">
-            <span>© LUMIÈRE {new Date().getFullYear()}. Все права защищены.</span>
+            <span>© LUMIÈRE {new Date().getFullYear()}. {d.rights}.</span>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-[#9a8878] transition-colors">Политика конфиденциальности</a>
-              <a href="#" className="hover:text-[#9a8878] transition-colors">Публичная оферта</a>
+              <a href="#" className="hover:text-[#9a8878] transition-colors">{lang === "ru" ? "Политика конфиденциальности" : "Privacy Policy"}</a>
+              <a href="#" className="hover:text-[#9a8878] transition-colors">{lang === "ru" ? "Публичная оферта" : "Terms of Service"}</a>
             </div>
           </div>
         </div>
