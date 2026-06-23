@@ -16,15 +16,23 @@ export const PROCEDURES_QUERY = `*[_type == "topProcedure"] | order(order asc) {
 }`
 
 export const TEAM_QUERY = `*[_type == "teamMember"] | order(order asc) {
-  _id, name, role, experience,
-  "photoUrl": photo.asset->url
+  _id, name,
+  "role": coalesce({"ru": role, "en": role}, {"ru": role, "en": role}),
+  "experience": coalesce({"ru": experience, "en": experience}, {"ru": experience, "en": experience}),
+  spec, bio,
+  "photoUrl": coalesce(photoUrl, photo.asset->url)
 }`
 
 export const TESTIMONIALS_QUERY = `*[_type == "testimonial"] | order(order asc) {
-  _id, name, text, rating,
-  "photoUrl": photo.asset->url
+  _id, name,
+  "text": coalesce({"ru": text, "en": text}, text),
+  rating,
+  "photoUrl": coalesce(photoUrl, photo.asset->url)
 }`
 
 export const SERVICES_QUERY = `*[_type == "service"] | order(order asc) {
-  _id, title, description, price, category
+  _id,
+  "title": coalesce({"ru": title, "en": title}, title),
+  "description": coalesce({"ru": description, "en": description}, description),
+  price, category
 }`

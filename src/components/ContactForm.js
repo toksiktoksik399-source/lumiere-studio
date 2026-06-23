@@ -170,23 +170,27 @@ export default function ContactForm({ labels }) {
         onChange={set("master")}
       />
 
-      {/* Дата и время */}
-      <div className="grid grid-cols-2 gap-3">
-        <input
-          type="date"
-          name="date"
-          value={form.date}
-          onChange={handleChange}
-          min={new Date().toISOString().split("T")[0]}
-          className={inputCls}
-        />
-        <DropDown
-          placeholder="— Время —"
-          header="Время записи"
-          value={form.time}
-          options={TIME_SLOTS}
-          onChange={set("time")}
-        />
+      {/* Дата и время — stack on mobile, side by side on sm+ */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 relative">
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            min={new Date().toISOString().split("T")[0]}
+            className={`${inputCls} w-full`}
+          />
+        </div>
+        <div className="flex-1">
+          <DropDown
+            placeholder="— Время —"
+            header="Время записи"
+            value={form.time}
+            options={TIME_SLOTS}
+            onChange={set("time")}
+          />
+        </div>
       </div>
 
       <textarea name="message" value={form.message} onChange={handleChange} rows={3}
