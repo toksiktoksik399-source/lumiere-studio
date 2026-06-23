@@ -33,11 +33,11 @@ export default async function HomePage({ params }) {
   return (
     <>
       <section className="relative overflow-hidden">
-        <div className="max-w-6xl mx-auto px-5 grid md:grid-cols-2 gap-10 items-center pt-12 pb-16 md:pt-16 md:pb-24">
+        <div className="max-w-6xl mx-auto px-5 grid md:grid-cols-2 gap-8 md:gap-10 items-center pt-10 pb-12 md:pt-16 md:pb-24">
           <Reveal>
             <p className="text-[#b08d57] tracking-[0.35em] uppercase text-xs mb-5">{t(s.tagline, lang)}</p>
-            <h1 className="font-display text-5xl md:text-7xl leading-[1.02] text-[#3f372e] mb-6">{t(s.heroHeading, lang)}</h1>
-            <p className="text-[#6b5f50] text-lg mb-8 max-w-md leading-relaxed">{t(s.heroSubheading, lang)}</p>
+            <h1 className="font-display text-4xl sm:text-5xl md:text-7xl leading-[1.02] text-[#3f372e] mb-4 md:mb-6">{t(s.heroHeading, lang)}</h1>
+            <p className="text-[#6b5f50] text-base md:text-lg mb-6 md:mb-8 max-w-md leading-relaxed">{t(s.heroSubheading, lang)}</p>
             <A href="#contacts" className="inline-flex rounded-full bg-[#b08d57] hover:bg-[#9a7846] text-white px-8 py-4 text-sm tracking-widest uppercase transition-colors">{lang === "ru" ? "Записаться онлайн" : "Book online"}</A>
             <A href="#services" className="mt-10 flex items-center gap-3 text-xs tracking-[0.3em] uppercase text-[#8a7c69] hover:text-[#b08d57]">
               <span className="w-8 h-px bg-[#b08d57]" />
@@ -45,7 +45,7 @@ export default async function HomePage({ params }) {
             </A>
           </Reveal>
           <Reveal delay={150}>
-            <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-[#efe2d2] to-[#e7d3bd] shadow-xl">
+            <div className="relative aspect-[4/5] max-h-[60vw] md:max-h-none rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-[#efe2d2] to-[#e7d3bd] shadow-xl">
               <HeroCarousel images={site.heroImages} />
             </div>
           </Reveal>
@@ -129,7 +129,7 @@ export default async function HomePage({ params }) {
           <Reveal>
             <Carousel>
               {site.gallery.map((url, i) => (
-                <div key={i} className="snap-start shrink-0 w-72 md:w-80 aspect-[3/4] rounded-2xl overflow-hidden bg-gradient-to-br from-[#efe2d2] to-[#e7d3bd]">
+                <div key={i} className="snap-start shrink-0 w-[72vw] sm:w-72 md:w-80 aspect-[3/4] rounded-2xl overflow-hidden bg-gradient-to-br from-[#efe2d2] to-[#e7d3bd]">
                   <SmartImage src={url} className="w-full h-full object-cover" />
                 </div>
               ))}
@@ -164,7 +164,7 @@ export default async function HomePage({ params }) {
           <Reveal>
             <Carousel>
               {site.team.map((m) => (
-                <div key={m._id} className="snap-start shrink-0 w-60 text-center">
+                <div key={m._id} className="snap-start shrink-0 w-48 sm:w-60 text-center">
                   <div className="aspect-[3/4] rounded-2xl overflow-hidden mb-4 bg-gradient-to-br from-[#e7d3bd] to-[#d8bfa0]">
                     <SmartImage src={m.photoUrl} className="w-full h-full object-cover" />
                   </div>
@@ -186,7 +186,7 @@ export default async function HomePage({ params }) {
           <Reveal>
             <Carousel>
               {site.testimonials.map((r) => (
-                <div key={r._id} className="snap-start shrink-0 w-80 md:w-96 bg-white border border-[#e9ddca] rounded-2xl p-8 flex flex-col">
+                <div key={r._id} className="snap-start shrink-0 w-[85vw] sm:w-80 md:w-96 bg-white border border-[#e9ddca] rounded-2xl p-6 md:p-8 flex flex-col">
                   <div className="text-[#b08d57] mb-3">{"★".repeat(r.rating || 5)}</div>
                   <p className="text-[#6b5f50] italic mb-6 leading-relaxed flex-1">«{t(r.text, lang)}»</p>
                   <div className="flex items-center gap-3 border-t border-[#efe6d9] pt-5">
