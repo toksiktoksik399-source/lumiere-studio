@@ -23,6 +23,9 @@ body {
 
 .font-display { font-family: var(--font-display), Georgia, serif; }
 
+/* Prevent text size adjustment on orientation change (iOS) */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
 /* Reveal animation */
 .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.85s ease, transform 0.85s ease; }
 .reveal.is-visible { opacity: 1; transform: none; }
@@ -39,11 +42,19 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Feature dividers */
+/* Feature dividers — desktop: vertical between items */
 .feature-grid > * + * { border-left: 1px solid var(--cream-3); }
 
+/* Mobile 2-column: vertical between columns, horizontal between rows */
 @media (max-width: 640px) {
   .feature-grid > * + * { border-left: none; border-top: none; }
-  .feature-grid > *:nth-child(even) { border-left: 1px solid var(--cream-3); }
-  .feature-grid > *:nth-child(n+3) { border-top: 1px solid var(--cream-3); }
+  .feature-grid > *:nth-child(even)  { border-left: 1px solid var(--cream-3); }
+  .feature-grid > *:nth-child(n+3)   { border-top: 1px solid var(--cream-3); }
 }
+
+/* Tap highlight — убираем синюю подсветку на iOS/Android */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Buttons: убираем outline на mobile тач */
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+button:focus:not(:focus-visible) { outline: none; }

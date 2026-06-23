@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 
-export default function MobileMenu({ lang, navItems, cta }) {
+export default function MobileMenu({ lang, navItems }) {
   const [open,    setOpen]    = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -62,20 +62,14 @@ export default function MobileMenu({ lang, navItems, cta }) {
           onClick={() => setOpen(false)}
           className="block w-full text-center bg-[#c9a898] hover:bg-[#b8967a] active:bg-[#b8967a] text-white text-[10px] tracking-[0.35em] uppercase py-4 transition-colors"
         >
-          {cta}
+          ЗАПИСАТЬСЯ
         </a>
-        <div className="flex gap-4 mt-5 text-xs text-[#9a8878] justify-center">
-          <a href="/ru" onClick={() => setOpen(false)} className="hover:text-[#1a1714] transition-colors">RU</a>
-          <span>/</span>
-          <a href="/en" onClick={() => setOpen(false)} className="hover:text-[#1a1714] transition-colors">EN</a>
-        </div>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Hamburger button */}
       <button
         onClick={() => setOpen(true)}
         aria-label="Открыть меню"
@@ -86,7 +80,6 @@ export default function MobileMenu({ lang, navItems, cta }) {
         <span className="w-3/4 h-px bg-[#1a1714] block" />
       </button>
 
-      {/* Portal: renders overlay directly in document.body, outside any stacking context */}
       {mounted && createPortal(overlay, document.body)}
     </>
   );

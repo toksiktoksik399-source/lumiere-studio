@@ -11,7 +11,6 @@ import { TEAM_QUERY } from "@/lib/queries";
 export default async function TeamPage({ params }) {
   const { lang } = await params;
 
-  // null = Sanity unavailable → fallback; [] = user deleted all → show empty
   let team = site.team;
   try {
     const sanityTeam = await client.fetch(TEAM_QUERY);
@@ -20,11 +19,11 @@ export default async function TeamPage({ params }) {
 
   return (
     <>
-      <section className="pt-14 md:pt-20 pb-10 md:pb-14 bg-[#f5ede8]">
-        <div className="max-w-5xl mx-auto px-5 md:px-8">
+      <section className="pt-12 md:pt-20 pb-8 md:pb-14 bg-[#f5ede8]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
           <Reveal>
             <p className="text-[10px] tracking-[0.45em] uppercase text-[#b8976a] mb-3">Lumière Studio</p>
-            <h1 className="font-display font-light text-4xl sm:text-5xl md:text-6xl text-[#1a1714] mb-4">НАШИ МАСТЕРА</h1>
+            <h1 className="font-display font-light text-3xl sm:text-5xl md:text-6xl text-[#1a1714] mb-4">НАШИ МАСТЕРА</h1>
             <p className="text-[#6b5f50] text-sm max-w-md leading-relaxed">
               Сертифицированные специалисты с опытом от 5 лет. Постоянное обучение, авторские техники.
             </p>
@@ -32,9 +31,9 @@ export default async function TeamPage({ params }) {
         </div>
       </section>
 
-      <section className="bg-white py-12 md:py-16">
-        <div className="max-w-5xl mx-auto px-5 md:px-8">
-          <div className="grid sm:grid-cols-2 gap-6 md:gap-8">
+      <section className="bg-white py-10 md:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="grid sm:grid-cols-2 gap-5 md:gap-8">
             {team.map((m, i) => (
               <Reveal key={m._id} delay={i * 70}>
                 <div className="border border-[#ede3da] bg-white flex flex-col">
@@ -50,7 +49,6 @@ export default async function TeamPage({ params }) {
                       <span className="text-[#6b5f50]">Специализация: </span>{m.spec}
                     </p>
                     <p className="text-xs text-[#9a8878] leading-relaxed mb-5">{m.bio}</p>
-                    {/* MasterBookButton saves master name and fires event before scroll */}
                     <MasterBookButton masterName={m.name} lang={lang} />
                   </div>
                 </div>
@@ -60,14 +58,14 @@ export default async function TeamPage({ params }) {
         </div>
       </section>
 
-      <section className="py-14 md:py-20 bg-[#ede3da]">
-        <div className="max-w-3xl mx-auto px-5 md:px-8 text-center">
+      <section className="py-12 md:py-20 bg-[#ede3da]">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 text-center">
           <Reveal>
             <p className="text-[10px] tracking-[0.45em] uppercase text-[#b8976a] mb-4">Доверьтесь профессионалам</p>
-            <h2 className="font-display font-light text-3xl md:text-5xl text-[#1a1714] mb-8">ЗАПИШИТЕСЬ К МАСТЕРУ</h2>
+            <h2 className="font-display font-light text-2xl sm:text-3xl md:text-5xl text-[#1a1714] mb-8">ЗАПИШИТЕСЬ К МАСТЕРУ</h2>
             <Link
               href={`/${lang}#contacts`}
-              className="inline-flex items-center gap-4 bg-[#1a1714] hover:bg-[#2d2520] text-white text-[10px] tracking-[0.4em] uppercase px-8 py-4 transition-colors"
+              className="inline-flex items-center gap-3 bg-[#1a1714] hover:bg-[#2d2520] text-white text-[10px] tracking-[0.25em] sm:tracking-[0.4em] uppercase px-7 sm:px-8 py-4 transition-colors"
             >
               ЗАПИСАТЬСЯ ОНЛАЙН
             </Link>

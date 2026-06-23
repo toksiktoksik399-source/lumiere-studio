@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import DatePicker from "./DatePicker";
 
 const DEFAULT_SERVICES = [
   "Ботокс / Диспорт", "Филлеры губ", "Биоревитализация", "Мезотерапия",
@@ -82,12 +83,10 @@ export default function ContactForm({ labels }) {
     master: "", date: "", time: "", message: "",
   });
 
-  // Dynamic lists from Sanity
   const [masters,  setMasters]  = useState(DEFAULT_MASTERS);
   const [services, setServices] = useState(DEFAULT_SERVICES);
 
   useEffect(() => {
-    // Load masters from Sanity — if source='sanity', use exactly what's there (even [])
     fetch("/api/admin/masters")
       .then(r => r.json())
       .then(d => {
@@ -98,7 +97,6 @@ export default function ContactForm({ labels }) {
       })
       .catch(() => {});
 
-    // Load services from Sanity
     fetch("/api/admin/services")
       .then(r => r.json())
       .then(d => {
@@ -112,7 +110,6 @@ export default function ContactForm({ labels }) {
       .catch(() => {});
   }, []);
 
-  // Pre-fill from ServicesTab / MasterBookButton via event or localStorage
   useEffect(() => {
     function apply(data) {
       setForm(f => ({
@@ -166,7 +163,6 @@ export default function ContactForm({ labels }) {
       <input name="name"  value={form.name}  onChange={handleChange} required placeholder={labels.name}  className={inputCls} />
       <input name="phone" value={form.phone} onChange={handleChange} required placeholder={labels.phone} className={inputCls} />
 
-      {/* Услуга — динамически из Sanity */}
       <DropDown
         placeholder="— Выберите услугу —"
         header="Услуга"
@@ -179,7 +175,6 @@ export default function ContactForm({ labels }) {
           placeholder="Укажите вашу услугу" className={inputCls} autoFocus />
       )}
 
-      {/* Мастер — динамически из Sanity */}
       <DropDown
         placeholder="— Выберите мастера —"
         header="Мастер"
@@ -189,9 +184,8 @@ export default function ContactForm({ labels }) {
       />
 
       {/* Дата и время */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Date */}
-        <div className="flex-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
           <p className="text-[10px] tracking-[0.3em] uppercase text-[#9a8878] mb-1.5 flex items-center gap-1.5">
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -201,25 +195,10 @@ export default function ContactForm({ labels }) {
             </svg>
             Дата записи
           </p>
-          <div className="relative">
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              onChange={handleChange}
-              min={new Date().toISOString().split("T")[0]}
-              className={`${inputCls} w-full`}
-            />
-            {!form.date && (
-              <span className="absolute inset-0 flex items-center px-4 pointer-events-none text-sm text-[#b8a898]">
-                дд.мм.гггг
-              </span>
-            )}
-          </div>
+          <DatePicker value={form.date} onChange={set("date")} />
         </div>
 
-        {/* Time */}
-        <div className="flex-1">
+        <div>
           <p className="text-[10px] tracking-[0.3em] uppercase text-[#9a8878] mb-1.5 flex items-center gap-1.5">
             <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="12" cy="12" r="10"/>
