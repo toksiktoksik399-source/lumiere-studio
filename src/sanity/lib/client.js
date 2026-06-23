@@ -5,5 +5,5 @@ export const client = createClient({
   projectId,
   dataset,
   apiVersion,
-  useCdn: false, // Always fetch fresh data (no CDN cache delay)
+  useCdn: false, // Always fetch fresh data. Project: hm4wz2vo
 })
