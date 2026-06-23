@@ -6,6 +6,8 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Intro from "@/components/Intro";
 import A from "@/components/A";
 import MobileMenu from "@/components/MobileMenu";
+import { client } from "@/sanity/lib/client";
+import { SETTINGS_QUERY } from "@/lib/queries";
 
 export const dynamicParams = false;
 
@@ -13,11 +15,33 @@ export function generateStaticParams() {
   return [{ lang: "ru" }, { lang: "en" }];
 }
 
+async function getSettings() {
+  if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) return null;
+  try {
+    return await client.fetch(SETTINGS_QUERY);
+  } catch {
+    return null;
+  }
+}
+
+function mergeSettings(sanitySettings) {
+  if (!sanitySettings) return site.settings;
+  const s = { ...site.settings };
+  const strFields = ["phone", "email", "whatsapp", "telegram", "vk", "mapUrl"];
+  strFields.forEach((f) => { if (sanitySettings[f]) s[f] = sanitySettings[f]; });
+  const locFields = ["title", "tagline", "city", "address", "workingHours"];
+  locFields.forEach((f) => { if (sanitySettings[f]?.ru || sanitySettings[f]?.en) s[f] = sanitySettings[f]; });
+  return s;
+}
+
 export default async function LangLayout({ children, params }) {
   const { lang } = await params;
-  const settings = site.settings;
   const d = dict[lang] || dict.ru;
-  const brand = t(settings?.title, lang) || "VALVERDE";
+
+  const sanitySettings = await getSettings();
+  const settings = mergeSettings(sanitySettings);
+
+  const brand = t(settings.title, lang) || "VALVERDE";
   const subtitle = lang === "ru" ? "клиника косметологии" : "cosmetology clinic";
 
   const navLeft = [
@@ -69,17 +93,17 @@ export default async function LangLayout({ children, params }) {
         <div className="max-w-6xl mx-auto px-5 py-10 md:py-12 grid md:grid-cols-3 gap-8 text-sm text-[#6b5f50]">
           <div>
             <div className="font-display text-2xl tracking-[0.2em] text-[#3f372e] mb-2">{brand}</div>
-            <div>{t(settings?.tagline, lang)}</div>
+            <div>{t(settings.tagline, lang)}</div>
           </div>
           <div className="space-y-1">
-            {settings?.phone && <div><A href={`tel:${settings.phone}`} className="hover:text-[#b08d57]">{settings.phone}</A></div>}
-            {settings?.email && <div>{settings.email}</div>}
-            {settings?.address && <div>{t(settings.address, lang)}</div>}
-            {settings?.workingHours && <div>{t(settings.workingHours, lang)}</div>}
+            {settings.phone && <div><A href={`tel:${settings.phone}`} className="hover:text-[#b08d57]">{settings.phone}</A></div>}
+            {settings.email && <div>{settings.email}</div>}
+            {settings.address && <div>{t(settings.address, lang)}</div>}
+            {settings.workingHours && <div>{t(settings.workingHours, lang)}</div>}
           </div>
           <div className="flex md:justify-end gap-4 items-start flex-wrap">
-            {settings?.telegram && <A href={settings.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-[#b08d57]">Telegram</A>}
-            {settings?.vk && <A href={settings.vk} target="_blank" rel="noopener noreferrer" className="hover:text-[#b08d57]">ВКонтакте</A>}
+            {settings.telegram && <A href={settings.telegram} target="_blank" rel="noopener noreferrer" className="hover:text-[#b08d57]">Telegram</A>}
+            {settings.vk && <A href={settings.vk} target="_blank" rel="noopener noreferrer" className="hover:text-[#b08d57]">ВКонтакте</A>}
           </div>
         </div>
         <div className="text-center text-xs text-[#a8997f] pb-6">© {new Date().getFullYear()} {brand}. {d.rights}.</div>
