@@ -1,6 +1,6 @@
 export async function POST(request) {
   try {
-    const { name, phone, message } = await request.json();
+    const { name, phone, service, message } = await request.json();
 
     if (!name || !phone) {
       return Response.json({ error: "missing fields" }, { status: 400 });
@@ -12,9 +12,10 @@ export async function POST(request) {
     console.log("TOKEN есть:", Boolean(token), "| CHAT_ID:", chatId);
 
     const text =
-      "🌸 Новая заявка с сайта\n\n" +
+      "✨ Новая заявка — LUMIÈRE\n\n" +
       "Имя: " + name + "\n" +
       "Телефон: " + phone +
+      (service ? "\nУслуга: " + service : "") +
       (message ? "\nСообщение: " + message : "");
 
     const res = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
