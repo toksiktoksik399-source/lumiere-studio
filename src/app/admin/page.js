@@ -74,48 +74,13 @@ function Label({ children }) {
 }
 
 /* ─── Seed button logic ──────────────────────────── */
-function SeedBanner({ onSeeded }) {
-  const [busy,    setBusy]    = useState(false);
-  const [msg,     setMsg]     = useState("");
-  const [isEmpty, setIsEmpty] = useState(null); // null=checking
-
-  // Check if DB is empty (no masters)
-  useEffect(() => {
-    fetch("/api/admin/masters")
-      .then(r => r.json())
-      .then(d => setIsEmpty((d.items?.length ?? 0) === 0))
-      .catch(() => setIsEmpty(false));
-  }, []);
-
-  async function seed() {
-    if (!confirm("Заполнить базу начальными данными? Это нужно сделать только один раз при первом запуске.")) return;
-    setBusy(true);
-    const res = await fetch("/api/admin/seed", { method: "POST" });
-    const d   = await res.json();
-    setBusy(false);
-    if (d.ok) {
-      setMsg(`Загружено: ${d.created.team} мастеров, ${d.created.reviews} отзывов, ${d.created.services} услуг`);
-      setIsEmpty(false);
-      onSeeded();
-    } else {
-      setMsg("Ошибка: " + (d.error || "неизвестно"));
-    }
-  }
-
+function SeedBanner() {
   return (
-    <div className="bg-green-50 border border-green-200 p-4 mb-6 flex items-start justify-between gap-4 flex-wrap">
-      <div>
-        <p className="text-green-800 text-sm font-semibold">✓ База данных подключена</p>
-        <p className="text-green-700 text-xs mt-0.5">
-          {msg || (isEmpty === null ? "Проверяем данные..." : isEmpty ? "База пустая — загрузите начальные данные" : "Данные сохранены. Изменения на сайте отображаются сразу.")}
-        </p>
-      </div>
-      {isEmpty && (
-        <button onClick={seed} disabled={busy}
-          className="shrink-0 bg-green-700 hover:bg-green-800 disabled:opacity-40 text-white text-[10px] tracking-widest uppercase px-5 py-2.5 transition-colors">
-          {busy ? "Загружаем..." : "⬆ Загрузить начальные данные"}
-        </button>
-      )}
+    <div className="bg-green-50 border border-green-200 p-4 mb-6">
+      <p className="text-green-800 text-sm font-semibold">✓ База данных подключена</p>
+      <p className="text-green-700 text-xs mt-0.5">
+        Изменения сохраняются автоматически и сразу отображаются на сайте.
+      </p>
     </div>
   );
 }
@@ -416,8 +381,6 @@ const TABS = [
 export default function AdminPage() {
   const [tab,      setTab]      = useState("masters");
   const [status,   setStatus]   = useState("checking"); // checking | ok | no_token
-  const [reloadKey, setReload]  = useState(0);
-
   useEffect(() => {
     fetch("/api/admin/ping")
       .then(r => r.json())
@@ -458,9 +421,7 @@ export default function AdminPage() {
             </p>
           </div>
         )}
-        {status === "ok" && (
-          <SeedBanner onSeeded={() => setReload(k => k + 1)} />
-        )}
+        {status === "ok" && <SeedBanner />}
 
         {/* Tabs */}
         <div className="flex border-b border-[#ddd3ca] mb-7 overflow-x-auto gap-0">
@@ -477,7 +438,7 @@ export default function AdminPage() {
         </div>
 
         {/* Content */}
-        <div key={reloadKey}>
+        <div>
           {tab === "masters"  && <Masters  canEdit={canEdit} />}
           {tab === "reviews"  && <Reviews  canEdit={canEdit} />}
           {tab === "services" && <Services canEdit={canEdit} />}
