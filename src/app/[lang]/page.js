@@ -1,4 +1,4 @@
-export const revalidate = 60; // ISR: recheck Sanity every 60s
+export const dynamic = 'force-dynamic'; // Always fetch fresh Sanity data
 
 import Link from "next/link";
 import { site } from "@/content/site";
