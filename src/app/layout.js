@@ -1,18 +1,24 @@
-import { Inter, Playfair_Display } from "next/font/google";
+import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"], variable: "--font-sans", display: "swap" });
-const playfair = Playfair_Display({ subsets: ["latin", "cyrillic"], variable: "--font-serif", display: "swap" });
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-display",
+  weight: ["300", "400", "500", "600"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
 
 export const metadata = {
-  title: "VALVERDE CLINIC — косметология и реабилитация в Уфе",
-  description: "Инъекционная, аппаратная и терапевтическая косметология. Реабилитация после пластической хирургии.",
+  title: "LUMIÈRE — Студия красоты",
+  description: "Премиальная студия косметологии. Инъекции, аппаратные процедуры, лазер, уходы.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ru">
-      <body className={`${inter.variable} ${playfair.variable} antialiased`}>{children}</body>
+      <body className={`${inter.variable} ${cormorant.variable} antialiased`}>{children}</body>
     </html>
   );
 }

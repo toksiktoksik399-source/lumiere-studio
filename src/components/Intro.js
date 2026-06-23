@@ -1,24 +1,38 @@
 "use client";
-
 import { useEffect, useState } from "react";
 
-export default function Intro({ brand = "VALVERDE", subtitle = "клиника косметологии" }) {
-  const [hidden, setHidden] = useState(false);
-  const [removed, setRemoved] = useState(false);
+export default function Intro() {
+  const [phase, setPhase] = useState("wait"); // wait | show | hide | done
 
   useEffect(() => {
-    const t1 = setTimeout(() => setHidden(true), 2200);
-    const t2 = setTimeout(() => setRemoved(true), 3300);
+    if (sessionStorage.getItem("lumiere_intro")) {
+      setPhase("done");
+      return;
+    }
+    setPhase("show");
+    const t1 = setTimeout(() => setPhase("hide"), 2000);
+    const t2 = setTimeout(() => {
+      setPhase("done");
+      sessionStorage.setItem("lumiere_intro", "1");
+    }, 3200);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
-  if (removed) return null;
+  if (phase === "wait" || phase === "done") return null;
 
   return (
-    <div className={`intro-overlay ${hidden ? "hide" : ""}`}>
-      <div className="font-display text-5xl md:text-7xl tracking-[0.3em] text-[#b08d57] intro-rise">{brand}</div>
-      <div className="mt-5 h-px w-16 bg-[#b08d57]/50 intro-rise" />
-      <div className="mt-5 text-[#8a7c69] tracking-[0.35em] uppercase text-xs intro-rise">{subtitle}</div>
+    <div
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#f5ede8]"
+      style={{ opacity: phase === "hide" ? 0 : 1, transition: "opacity 1.2s ease", pointerEvents: phase === "hide" ? "none" : "auto" }}
+    >
+      <div className="flex items-center gap-5 intro-rise">
+        <span className="text-[#b8976a] text-xl tracking-widest font-light">—</span>
+        <span className="font-display text-5xl md:text-7xl tracking-[0.35em] text-[#1a1714]">LUMIÈRE</span>
+        <span className="text-[#b8976a] text-xl tracking-widest font-light">—</span>
+      </div>
+      <p className="mt-4 text-[10px] tracking-[0.55em] uppercase text-[#b8976a] intro-rise-2">
+        студия красоты
+      </p>
     </div>
   );
 }
