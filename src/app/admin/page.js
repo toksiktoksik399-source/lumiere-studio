@@ -313,15 +313,36 @@ const TABS = [
 
 export default function AdminPage() {
   const [tab, setTab] = useState("masters");
-  const [sanityOk, setSanityOk] = useState(null); // null = loading
+  const [sanityOk, setSanityOk] = useState(null);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState("");
 
   useEffect(() => {
-    // Use dedicated ping endpoint — reliable regardless of document count
     fetch("/api/admin/ping")
       .then((r) => r.json())
       .then((d) => setSanityOk(d.ok === true))
       .catch(() => setSanityOk(false));
   }, []);
+
+  async function handleSeed() {
+    if (!confirm("Это удалит все старые данные в Sanity и загрузит текущие данные сайта. Продолжить?")) return;
+    setSeeding(true);
+    setSeedMsg("");
+    try {
+      const r = await fetch("/api/admin/seed", { method: "POST" });
+      const d = await r.json();
+      if (d.ok) {
+        setSeedMsg(`✓ Загружено: ${d.created.team} мастеров, ${d.created.reviews} отзывов, ${d.created.services} услуг. Обновите страницу.`);
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setSeedMsg("Ошибка: " + (d.error || "неизвестно"));
+      }
+    } catch (e) {
+      setSeedMsg("Ошибка: " + e.message);
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const readonly = sanityOk === false;
 
@@ -351,8 +372,21 @@ export default function AdminPage() {
           </div>
         )}
         {sanityOk === true && (
-          <div className="bg-green-50 border border-green-200 p-3 mb-6 text-xs text-green-800">
-            ✓ Sanity подключён — изменения сохраняются в базе данных
+          <div className="bg-green-50 border border-green-200 p-4 mb-6">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-green-800 text-xs font-medium">✓ Sanity подключён — изменения сохраняются</p>
+                <p className="text-green-700 text-xs mt-0.5">Если таблицы пустые — нажмите «Загрузить данные с сайта»</p>
+              </div>
+              <button
+                onClick={handleSeed}
+                disabled={seeding}
+                className="shrink-0 bg-[#1a1714] hover:bg-[#2d2520] text-white text-[10px] tracking-widest uppercase px-4 py-2 transition-colors disabled:opacity-50"
+              >
+                {seeding ? "Загружаем..." : "⬆ Загрузить данные с сайта"}
+              </button>
+            </div>
+            {seedMsg && <p className="text-green-800 text-xs mt-2">{seedMsg}</p>}
           </div>
         )}
 

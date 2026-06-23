@@ -1,3 +1,5 @@
+export const revalidate = 60;
+
 import Link from "next/link";
 import { site } from "@/content/site";
 import Reveal from "@/components/Reveal";

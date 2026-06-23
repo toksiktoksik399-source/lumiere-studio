@@ -1,3 +1,5 @@
+export const revalidate = 60; // ISR: recheck Sanity every 60s
+
 import Link from "next/link";
 import { site } from "@/content/site";
 import Reveal from "@/components/Reveal";

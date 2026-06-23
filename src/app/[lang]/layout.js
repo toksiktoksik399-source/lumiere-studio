@@ -34,7 +34,7 @@ export default async function LangLayout({ children, params }) {
           </nav>
 
           {/* Logo */}
-          <Link href={`/${lang}`} className="text-center shrink-0 flex flex-col items-center">
+          <Link href={`/${lang}`} className="text-center shrink-0 flex flex-col items-center" scroll={true}>
             <div className="flex items-center gap-2">
               <span className="text-[#b8976a] text-base font-light">—</span>
               <span className="font-display text-2xl md:text-3xl tracking-[0.35em] text-[#1a1714]">LUMIÈRE</span>
