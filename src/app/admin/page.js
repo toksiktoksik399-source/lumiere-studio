@@ -190,10 +190,10 @@ function SiteSettings({ canEdit }) {
         </div>
         <div><Label>Подзаголовок</Label><textarea rows={2} value={form.heroSubheading??""} onChange={set("heroSubheading")} className={cls.txt} /></div>
         <div>
-          <Label>Фото героя</Label>
-          <Photo value={form.heroImageUrl??""} onChange={set("heroImageUrl")} />
+          <Label>Фото героя (несколько — будут листаться автоматически)</Label>
+          <GalleryManager urls={form.heroImageUrls??[]} onChange={v => setForm(f => ({ ...f, heroImageUrls: v }))} />
         </div>
-        <SaveBtn section="hero" fields={["heroLine1","heroLine2","heroLine3","heroSubheading","heroImageUrl"]} />
+        <SaveBtn section="hero" fields={["heroLine1","heroLine2","heroLine3","heroSubheading","heroImageUrls"]} />
       </div>
 
       {/* Gallery */}
@@ -206,13 +206,10 @@ function SiteSettings({ canEdit }) {
 
       {/* Clinic photos */}
       <div className={cls.sec}>
-        <p className={cls.h3}>Фото студии (в разделе услуг)</p>
-        <p className="text-xs text-[#9a8878]">Два фото, которые показываются рядом с услугами на главной странице.</p>
-        <div className="grid sm:grid-cols-2 gap-6">
-          <div><Label>Фото 1</Label><Photo value={form.clinicImage1Url??""} onChange={set("clinicImage1Url")} /></div>
-          <div><Label>Фото 2</Label><Photo value={form.clinicImage2Url??""} onChange={set("clinicImage2Url")} /></div>
-        </div>
-        <SaveBtn section="clinic" fields={["clinicImage1Url","clinicImage2Url"]} />
+        <p className={cls.h3}>Фото студии (в разделе услуг — листаются)</p>
+        <p className="text-xs text-[#9a8878]">Фото рядом с услугами на главной странице. Можно добавить несколько — посетитель листает их вправо.</p>
+        <GalleryManager urls={form.clinicImageUrls??[]} onChange={v => setForm(f => ({ ...f, clinicImageUrls: v }))} />
+        <SaveBtn section="clinic" fields={["clinicImageUrls"]} />
       </div>
 
       {/* About */}

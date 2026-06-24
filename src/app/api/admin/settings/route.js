@@ -11,11 +11,11 @@ function defaults() {
     workingHours: site.workingHours, telegram: site.telegram,
     whatsapp: site.whatsapp, instagram: site.instagram ?? '',
     heroLine1: site.heroHeading[0], heroLine2: site.heroHeading[1], heroLine3: site.heroHeading[2],
-    heroSubheading: site.heroSubheading, heroImageUrl: site.heroImage,
+    heroSubheading: site.heroSubheading,
+    heroImageUrls:  [site.heroImage],
     aboutText: site.aboutText ?? '',
     galleryUrls: site.gallery ?? [],
-    clinicImage1Url: site.clinicImages?.[0] ?? '',
-    clinicImage2Url: site.clinicImages?.[1] ?? '',
+    clinicImageUrls: site.clinicImages ?? [],
   };
 }
 
@@ -25,6 +25,19 @@ export async function GET() {
     const doc = await adminClient.fetch(`*[_id == "${DOC_ID}"][0]`);
     if (!doc) return Response.json({ ...defaults(), source: 'defaults' });
     const d = defaults();
+
+    // heroImageUrls: prefer new array, fall back to old single field
+    let heroImageUrls = doc.heroImageUrls;
+    if (!heroImageUrls?.length && doc.heroImageUrl) heroImageUrls = [doc.heroImageUrl];
+    if (!heroImageUrls?.length) heroImageUrls = d.heroImageUrls;
+
+    // clinicImageUrls: prefer new array, fall back to old two fields
+    let clinicImageUrls = doc.clinicImageUrls;
+    if (!clinicImageUrls?.length) {
+      const old = [doc.clinicImage1Url, doc.clinicImage2Url].filter(Boolean);
+      clinicImageUrls = old.length ? old : d.clinicImageUrls;
+    }
+
     return Response.json({
       phone:          doc.phone ?? d.phone,
       email:          doc.email ?? d.email,
@@ -37,11 +50,10 @@ export async function GET() {
       heroLine2:      doc.heroLine2 ?? d.heroLine2,
       heroLine3:      doc.heroLine3 ?? d.heroLine3,
       heroSubheading: strOf(doc.heroSubheading) || d.heroSubheading,
-      heroImageUrl:   doc.heroImageUrl ?? d.heroImageUrl,
+      heroImageUrls,
       aboutText:      strOf(doc.aboutText) || d.aboutText,
       galleryUrls:    doc.galleryUrls ?? d.galleryUrls,
-      clinicImage1Url: doc.clinicImage1Url ?? d.clinicImage1Url,
-      clinicImage2Url: doc.clinicImage2Url ?? d.clinicImage2Url,
+      clinicImageUrls,
       source: 'sanity',
     });
   } catch (e) {

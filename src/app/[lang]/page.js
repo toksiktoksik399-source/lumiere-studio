@@ -7,6 +7,7 @@ import SmartImage from "@/components/SmartImage";
 import Carousel from "@/components/Carousel";
 import ServicesTab from "@/components/ServicesTab";
 import ContactForm from "@/components/ContactForm";
+import HeroSlideshow from "@/components/HeroSlideshow";
 import { dict } from "@/lib/dictionaries";
 import { client } from "@/sanity/lib/client";
 import { TEAM_QUERY, TESTIMONIALS_QUERY, SERVICES_QUERY } from "@/lib/queries";
@@ -47,10 +48,14 @@ export default async function HomePage({ params }) {
   // Site settings — Sanity overrides site.js
   const heroHeading   = [pick(s?.heroLine1, site.heroHeading[0]), pick(s?.heroLine2, site.heroHeading[1]), pick(s?.heroLine3, site.heroHeading[2])];
   const heroSubheading = pick(s?.heroSubheading, site.heroSubheading);
-  const heroImage     = pick(s?.heroImageUrl, site.heroImage);
+  const heroImages    = (s?.heroImageUrls?.length > 0) ? s.heroImageUrls
+                        : s?.heroImageUrl ? [s.heroImageUrl]
+                        : site.heroImage ? [site.heroImage] : [];
   const gallery       = (s?.galleryUrls?.length > 0) ? s.galleryUrls : site.gallery;
-  const clinicImg1    = pick(s?.clinicImage1Url, site.clinicImages[0]);
-  const clinicImg2    = pick(s?.clinicImage2Url, site.clinicImages[1]);
+  const clinicImages  = (s?.clinicImageUrls?.length > 0) ? s.clinicImageUrls
+                        : [s?.clinicImage1Url, s?.clinicImage2Url].filter(Boolean).length
+                        ? [s.clinicImage1Url, s.clinicImage2Url].filter(Boolean)
+                        : site.clinicImages ?? [];
   const contactPhone  = pick(s?.phone, site.phone);
   const contactEmail  = pick(s?.email, site.email);
   const contactAddr   = pick(s?.address, site.address);
@@ -100,14 +105,9 @@ export default async function HomePage({ params }) {
           </Reveal>
         </div>
 
-        {/* Right: hero image */}
+        {/* Right: hero slideshow */}
         <div className="order-1 md:order-2 flex-1 relative overflow-hidden" style={{minHeight: "min(60vw, 380px)"}}>
-          <img
-            src={heroImage}
-            alt="Lumière — студия красоты"
-            className="absolute inset-0 w-full h-full object-cover object-top"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#f5ede8]/20 md:hidden" />
+          <HeroSlideshow images={heroImages} />
         </div>
       </section>
 
@@ -138,28 +138,34 @@ export default async function HomePage({ params }) {
             <ServicesTab services={servicesObj} lang={lang} />
           </Reveal>
 
-          {/* Right: staggered photos + info block */}
+          {/* Right: scrollable clinic photos + info block */}
           <Reveal delay={100}>
-            <div className="grid grid-cols-2 gap-4 items-start">
-              <div className="aspect-[2/3] overflow-hidden bg-[#ede3da] rounded-sm">
-                <SmartImage src={clinicImg1} className="w-full h-full object-cover" />
+            <div className="space-y-4">
+              {/* Swipeable photo carousel */}
+              <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar">
+                {clinicImages.map((url, i) => (
+                  <div key={i} className="snap-start shrink-0 w-[56%] sm:w-[48%] aspect-[2/3] overflow-hidden bg-[#ede3da] rounded-sm">
+                    <SmartImage src={url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col gap-4 pt-10">
-                <div className="aspect-[2/3] overflow-hidden bg-[#ede3da] rounded-sm">
-                  <SmartImage src={clinicImg2} className="w-full h-full object-cover" />
-                </div>
-                <div className="bg-[#ede3da] p-4 sm:p-5">
-                  <h3 className="font-display text-lg sm:text-xl text-[#1a1714] mb-2">О СТУДИИ</h3>
-                  <p className="text-xs text-[#6b5f50] leading-relaxed mb-4">
-                    Lumière — это место, где красота и наука встречаются.
-                  </p>
-                  <Link
-                    href={`/${lang}/about`}
-                    className="text-[10px] tracking-[0.35em] uppercase text-[#b8976a] hover:text-[#1a1714] transition-colors inline-flex items-center gap-2"
-                  >
-                    ПОДРОБНЕЕ <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                  </Link>
-                </div>
+              {clinicImages.length > 1 && (
+                <p className="text-[9px] tracking-widest uppercase text-[#b8976a] text-right">
+                  {clinicImages.length} фото · листайте →
+                </p>
+              )}
+              {/* О студии card */}
+              <div className="bg-[#ede3da] p-4 sm:p-5">
+                <h3 className="font-display text-lg sm:text-xl text-[#1a1714] mb-2">О СТУДИИ</h3>
+                <p className="text-xs text-[#6b5f50] leading-relaxed mb-4">
+                  Lumière — это место, где красота и наука встречаются.
+                </p>
+                <Link
+                  href={`/${lang}/about`}
+                  className="text-[10px] tracking-[0.35em] uppercase text-[#b8976a] hover:text-[#1a1714] transition-colors inline-flex items-center gap-2"
+                >
+                  ПОДРОБНЕЕ <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </Link>
               </div>
             </div>
           </Reveal>
