@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/content/site";
+import { client } from "@/sanity/lib/client";
 import Intro from "@/components/Intro";
 import MobileMenu from "@/components/MobileMenu";
 
@@ -10,6 +11,8 @@ export function generateStaticParams() {
 
 export default async function LangLayout({ children, params }) {
   const { lang } = await params;
+  const s = await client.fetch(`*[_id == "siteSettings"][0]{phone,email,address,workingHours,telegram,instagram,tagline}`).catch(() => null);
+  const p = k => (s?.[k] && s[k] !== '') ? (typeof s[k] === 'object' ? (s[k].ru ?? '') : s[k]) : site[k] ?? '';
 
   const navItems = [
     { href: `/${lang}/services`, label: "УСЛУГИ" },
@@ -74,17 +77,17 @@ export default async function LangLayout({ children, params }) {
                 <span className="font-display text-2xl tracking-[0.3em] text-white">LUMIÈRE</span>
                 <span className="text-[#b8976a]">—</span>
               </div>
-              <p className="text-xs text-[#6b5f50] leading-relaxed">{site.tagline}</p>
+              <p className="text-xs text-[#6b5f50] leading-relaxed">{p('tagline')}</p>
             </div>
             <div className="space-y-2 text-xs">
-              <div><a href={`tel:${site.phone}`} className="hover:text-white transition-colors">{site.phone}</a></div>
-              <div><a href={`mailto:${site.email}`} className="hover:text-white transition-colors">{site.email}</a></div>
-              <div className="pt-1 text-[#6b5f50]">{site.address}</div>
-              <div className="text-[#6b5f50]">{site.workingHours}</div>
+              <div><a href={`tel:${p('phone')}`} className="hover:text-white transition-colors">{p('phone')}</a></div>
+              <div><a href={`mailto:${p('email')}`} className="hover:text-white transition-colors">{p('email')}</a></div>
+              <div className="pt-1 text-[#6b5f50]">{p('address')}</div>
+              <div className="text-[#6b5f50]">{p('workingHours')}</div>
             </div>
             <div className="flex md:justify-end gap-6 text-xs items-start flex-wrap">
-              <a href={site.telegram}  target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors tracking-wider">TELEGRAM</a>
-              <a href={site.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors tracking-wider">INSTAGRAM</a>
+              {p('telegram')  && <a href={p('telegram')}  target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors tracking-wider">TELEGRAM</a>}
+              {p('instagram') && <a href={p('instagram')} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors tracking-wider">INSTAGRAM</a>}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-between gap-3 text-[10px] tracking-widest uppercase text-[#4a3f38]">

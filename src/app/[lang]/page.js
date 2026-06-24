@@ -19,11 +19,14 @@ const CAT_TITLES = {
 
 async function fetchFromSanity() {
   const safe = async (q) => { try { return await client.fetch(q); } catch { return null; } };
-  const [team, testimonials, services] = await Promise.all([
+  const [team, testimonials, services, settings] = await Promise.all([
     safe(TEAM_QUERY), safe(TESTIMONIALS_QUERY), safe(SERVICES_QUERY),
+    safe(`*[_id == "siteSettings"][0]`),
   ]);
-  return { team, testimonials, services };
+  return { team, testimonials, services, settings };
 }
+
+function pick(sanity, fallback) { return (sanity !== null && sanity !== undefined && sanity !== '') ? sanity : fallback; }
 
 const ICONS = {
   bottle: <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3h6v4l2 3v10a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V10l2-3V3z"/><line x1="9" y1="3" x2="9" y2="7"/><line x1="15" y1="3" x2="15" y2="7"/></svg>,
@@ -36,10 +39,25 @@ export default async function HomePage({ params }) {
   const { lang } = await params;
   const d = dict[lang] || dict.ru;
 
-  const { team: sanityTeam, testimonials: sanityReviews, services: sanityServices } = await fetchFromSanity();
+  const { team: sanityTeam, testimonials: sanityReviews, services: sanityServices, settings: s } = await fetchFromSanity();
 
   const teamMembers = sanityTeam !== null ? sanityTeam : site.team;
   const reviews     = sanityReviews !== null ? sanityReviews : site.testimonials;
+
+  // Site settings — Sanity overrides site.js
+  const heroHeading   = [pick(s?.heroLine1, site.heroHeading[0]), pick(s?.heroLine2, site.heroHeading[1]), pick(s?.heroLine3, site.heroHeading[2])];
+  const heroSubheading = pick(s?.heroSubheading, site.heroSubheading);
+  const heroImage     = pick(s?.heroImageUrl, site.heroImage);
+  const gallery       = (s?.galleryUrls?.length > 0) ? s.galleryUrls : site.gallery;
+  const clinicImg1    = pick(s?.clinicImage1Url, site.clinicImages[0]);
+  const clinicImg2    = pick(s?.clinicImage2Url, site.clinicImages[1]);
+  const contactPhone  = pick(s?.phone, site.phone);
+  const contactEmail  = pick(s?.email, site.email);
+  const contactAddr   = pick(s?.address, site.address);
+  const contactHours  = pick(s?.workingHours, site.workingHours);
+  const contactTG     = pick(s?.telegram, site.telegram);
+  const contactIG     = pick(s?.instagram, site.instagram);
+  const contactWA     = pick(s?.whatsapp, site.whatsapp);
 
   let servicesObj = sanityServices !== null ? null : site.services;
   if (sanityServices !== null) {
@@ -62,12 +80,12 @@ export default async function HomePage({ params }) {
               Студия красоты · Lumière
             </p>
             <h1 className="font-display font-light text-[2.4rem] sm:text-5xl md:text-4xl lg:text-5xl xl:text-6xl leading-[0.92] text-[#1a1714] mb-5 md:mb-8">
-              {site.heroHeading.map((line, i) => (
+              {heroHeading.map((line, i) => (
                 <span key={i} className="block">{line}</span>
               ))}
             </h1>
             <p className="text-[#6b5f50] text-sm mb-7 md:mb-10 max-w-xs leading-relaxed">
-              {site.heroSubheading}
+              {heroSubheading}
             </p>
             <Link
               href={`/${lang}#contacts`}
@@ -85,7 +103,7 @@ export default async function HomePage({ params }) {
         {/* Right: hero image */}
         <div className="order-1 md:order-2 flex-1 relative overflow-hidden" style={{minHeight: "min(60vw, 380px)"}}>
           <img
-            src={site.heroImage}
+            src={heroImage}
             alt="Lumière — студия красоты"
             className="absolute inset-0 w-full h-full object-cover object-top"
           />
@@ -124,11 +142,11 @@ export default async function HomePage({ params }) {
           <Reveal delay={100}>
             <div className="grid grid-cols-2 gap-4 items-start">
               <div className="aspect-[2/3] overflow-hidden bg-[#ede3da] rounded-sm">
-                <SmartImage src={site.clinicImages[0]} className="w-full h-full object-cover" />
+                <SmartImage src={clinicImg1} className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col gap-4 pt-10">
                 <div className="aspect-[2/3] overflow-hidden bg-[#ede3da] rounded-sm">
-                  <SmartImage src={site.clinicImages[1]} className="w-full h-full object-cover" />
+                  <SmartImage src={clinicImg2} className="w-full h-full object-cover" />
                 </div>
                 <div className="bg-[#ede3da] p-4 sm:p-5">
                   <h3 className="font-display text-lg sm:text-xl text-[#1a1714] mb-2">О СТУДИИ</h3>
@@ -161,7 +179,7 @@ export default async function HomePage({ params }) {
           </Reveal>
           <Reveal>
             <Carousel>
-              {site.gallery.map((url, i) => (
+              {gallery.map((url, i) => (
                 <div key={i} className="snap-start shrink-0 w-[75vw] sm:w-64 md:w-72 lg:w-80 aspect-[3/4] overflow-hidden bg-[#ddd3ca] rounded-sm">
                   <SmartImage src={url} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
                 </div>
@@ -265,25 +283,25 @@ export default async function HomePage({ params }) {
             <div className="space-y-5 text-sm text-[#3d3229]">
               <div>
                 <div className="text-[10px] tracking-widest uppercase text-[#b8976a] mb-1">Телефон</div>
-                <a href={`tel:${site.phone}`} className="hover:text-[#b8976a] transition-colors text-base">{site.phone}</a>
+                <a href={`tel:${contactPhone}`} className="hover:text-[#b8976a] transition-colors text-base">{contactPhone}</a>
               </div>
               <div>
                 <div className="text-[10px] tracking-widest uppercase text-[#b8976a] mb-1">Адрес</div>
-                <div>{site.address}</div>
+                <div>{contactAddr}</div>
               </div>
               <div>
                 <div className="text-[10px] tracking-widest uppercase text-[#b8976a] mb-1">Часы работы</div>
-                <div className="text-[#6b5f50]">{site.workingHours}</div>
+                <div className="text-[#6b5f50]">{contactHours}</div>
               </div>
               <div>
                 <div className="text-[10px] tracking-widest uppercase text-[#b8976a] mb-1">Email</div>
-                <a href={`mailto:${site.email}`} className="hover:text-[#b8976a] transition-colors">{site.email}</a>
+                <a href={`mailto:${contactEmail}`} className="hover:text-[#b8976a] transition-colors">{contactEmail}</a>
               </div>
             </div>
             <div className="flex gap-5 mt-8 text-[10px] tracking-widest uppercase text-[#6b5f50]">
-              <a href={site.telegram}  className="hover:text-[#b8976a] transition-colors">Telegram</a>
-              <a href={site.instagram} className="hover:text-[#b8976a] transition-colors">Instagram</a>
-              <a href={`https://wa.me/${site.whatsapp}`} className="hover:text-[#b8976a] transition-colors">WhatsApp</a>
+              {contactTG && <a href={contactTG} className="hover:text-[#b8976a] transition-colors">Telegram</a>}
+              {contactIG && <a href={contactIG} className="hover:text-[#b8976a] transition-colors">Instagram</a>}
+              {contactWA && <a href={`https://wa.me/${contactWA}`} className="hover:text-[#b8976a] transition-colors">WhatsApp</a>}
             </div>
           </Reveal>
           <Reveal delay={100}>

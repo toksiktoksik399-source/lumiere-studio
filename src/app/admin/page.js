@@ -11,6 +11,8 @@ const cls = {
   out:  "border border-[#ddd3ca] text-[#6b5f50] text-[10px] tracking-widest uppercase px-4 py-2.5 hover:border-[#b8976a] transition-colors",
   del:  "border border-red-200 text-red-400 text-[10px] tracking-widest uppercase px-3 py-2 hover:bg-red-50 transition-colors",
   tag:  "text-[10px] tracking-widest uppercase px-3 py-1.5 border transition-colors",
+  sec:  "bg-white border border-[#ddd3ca] p-5 space-y-4",
+  h3:   "text-[10px] tracking-widest uppercase text-[#9a8878] border-b border-[#ede3da] pb-2",
 };
 
 /* ─── Photo Upload Widget ────────────────────────── */
@@ -36,22 +38,17 @@ function Photo({ value, onChange }) {
 
   return (
     <div>
-      <p className="text-[10px] tracking-widest uppercase text-[#9a8878] mb-2">Фото</p>
       <div className="flex gap-3 items-start flex-wrap">
-        {/* Preview */}
         <div className="relative w-20 h-20 border border-[#ddd3ca] bg-[#f5ede8] shrink-0 flex items-center justify-center overflow-hidden">
           {value
-            ? <img src={value} alt="" className="w-full h-full object-cover" onError={(e)=>e.target.style.opacity=0} />
+            ? <img src={value} alt="" className="w-full h-full object-cover" onError={e=>e.target.style.opacity=0} />
             : <span className="text-2xl text-[#ddd3ca]">📷</span>
           }
           {value && (
             <button type="button" onClick={() => onChange("")}
-              className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center leading-none">
-              ✕
-            </button>
+              className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">✕</button>
           )}
         </div>
-        {/* Controls */}
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           <button type="button" disabled={busy} onClick={() => ref.current?.click()}
             className="text-[10px] tracking-widest uppercase bg-[#1a1714] hover:bg-[#2d2520] text-white px-4 py-2 disabled:opacity-40 transition-colors self-start">
@@ -68,19 +65,165 @@ function Photo({ value, onChange }) {
   );
 }
 
-/* ─── Label ──────────────────────────────────────── */
+/* ─── Gallery Manager ────────────────────────────── */
+function GalleryManager({ urls = [], onChange }) {
+  const inputRef = useRef();
+  const [busy, setBusy] = useState(false);
+
+  async function upload(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setBusy(true);
+    const next = [...urls];
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file);
+      try {
+        const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (data.url) next.push(data.url);
+      } catch {}
+    }
+    onChange(next);
+    setBusy(false);
+    e.target.value = "";
+  }
+
+  function remove(idx) { onChange(urls.filter((_, i) => i !== idx)); }
+
+  return (
+    <div className="space-y-3">
+      {urls.length === 0 && (
+        <p className="text-[#9a8878] text-xs text-center py-4 border border-dashed border-[#ddd3ca]">Нет фото — добавьте с устройства</p>
+      )}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+        {urls.map((url, i) => (
+          <div key={i} className="relative aspect-square bg-[#f5ede8] overflow-hidden group">
+            <img src={url} alt="" className="w-full h-full object-cover" onError={e=>e.target.style.opacity=0.3} />
+            <button onClick={() => remove(i)}
+              className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-3 items-center">
+        <button type="button" disabled={busy} onClick={() => inputRef.current?.click()}
+          className="text-[10px] tracking-widest uppercase bg-[#1a1714] hover:bg-[#2d2520] text-white px-4 py-2 disabled:opacity-40 transition-colors">
+          {busy ? "Загружаем..." : "📤 Добавить фото"}
+        </button>
+        <input ref={inputRef} type="file" multiple accept="image/*" className="hidden" onChange={upload} />
+        {urls.length > 0 && <span className="text-xs text-[#9a8878]">{urls.length} фото</span>}
+      </div>
+    </div>
+  );
+}
+
 function Label({ children }) {
   return <p className="text-[10px] tracking-widest uppercase text-[#9a8878] mb-1">{children}</p>;
 }
 
-/* ─── Seed button logic ──────────────────────────── */
-function SeedBanner() {
+/* ─── Site Settings ──────────────────────────────── */
+function SiteSettings({ canEdit }) {
+  const [form, setForm] = useState(null);
+  const [saving, setSaving] = useState("");
+  const [ok, setOk]   = useState("");
+
+  useEffect(() => {
+    fetch("/api/admin/settings").then(r => r.json()).then(d => setForm(d));
+  }, []);
+
+  const set = k => v => setForm(f => ({ ...f, [k]: typeof v === "string" ? v : v.target.value }));
+
+  async function save(section, fields) {
+    if (!canEdit) return;
+    setSaving(section); setOk("");
+    const body = {};
+    fields.forEach(k => { if (form[k] !== undefined) body[k] = form[k]; });
+    const res = await fetch("/api/admin/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    setSaving("");
+    setOk(res.ok ? section : "err_" + section);
+    setTimeout(() => setOk(""), 3000);
+  }
+
+  if (!form) return <div className="text-[#9a8878] text-sm py-10 text-center">Загружаем настройки...</div>;
+
+  const SaveBtn = ({ section, fields }) => canEdit ? (
+    <div className="flex gap-3 items-center pt-2">
+      <button onClick={() => save(section, fields)} disabled={!!saving} className={cls.save}>
+        {saving === section ? "Сохраняем..." : "Сохранить"}
+      </button>
+      {ok === section       && <span className="text-green-600 text-xs">Сохранено ✓</span>}
+      {ok === "err_"+section && <span className="text-red-500 text-xs">Ошибка</span>}
+    </div>
+  ) : null;
+
   return (
-    <div className="bg-green-50 border border-green-200 p-4 mb-6">
-      <p className="text-green-800 text-sm font-semibold">✓ База данных подключена</p>
-      <p className="text-green-700 text-xs mt-0.5">
-        Изменения сохраняются автоматически и сразу отображаются на сайте.
-      </p>
+    <div className="space-y-6">
+
+      {/* Contacts */}
+      <div className={cls.sec}>
+        <p className={cls.h3}>Контакты и соцсети</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div><Label>Телефон</Label><input value={form.phone??""} onChange={set("phone")} className={cls.inp} /></div>
+          <div><Label>Email</Label><input value={form.email??""} onChange={set("email")} className={cls.inp} /></div>
+          <div className="sm:col-span-2"><Label>Адрес</Label><input value={form.address??""} onChange={set("address")} className={cls.inp} /></div>
+          <div className="sm:col-span-2"><Label>Часы работы</Label><input value={form.workingHours??""} onChange={set("workingHours")} placeholder="Пн–Сб 10:00–21:00 · Вс 11:00–19:00" className={cls.inp} /></div>
+          <div><Label>WhatsApp (только цифры)</Label><input value={form.whatsapp??""} onChange={set("whatsapp")} placeholder="74951234567" className={cls.inp} /></div>
+          <div><Label>Telegram (ссылка)</Label><input value={form.telegram??""} onChange={set("telegram")} placeholder="https://t.me/..." className={cls.inp} /></div>
+          <div className="sm:col-span-2"><Label>Instagram (ссылка)</Label><input value={form.instagram??""} onChange={set("instagram")} placeholder="https://instagram.com/..." className={cls.inp} /></div>
+        </div>
+        <SaveBtn section="contacts" fields={["phone","email","address","workingHours","whatsapp","telegram","instagram"]} />
+      </div>
+
+      {/* Hero */}
+      <div className={cls.sec}>
+        <p className={cls.h3}>Главный экран</p>
+        <div className="grid sm:grid-cols-3 gap-3">
+          <div><Label>Заголовок — строка 1</Label><input value={form.heroLine1??""} onChange={set("heroLine1")} placeholder="ИСКУССТВО" className={cls.inp} /></div>
+          <div><Label>Строка 2</Label><input value={form.heroLine2??""} onChange={set("heroLine2")} placeholder="ВАШЕЙ" className={cls.inp} /></div>
+          <div><Label>Строка 3</Label><input value={form.heroLine3??""} onChange={set("heroLine3")} placeholder="КРАСОТЫ" className={cls.inp} /></div>
+        </div>
+        <div><Label>Подзаголовок</Label><textarea rows={2} value={form.heroSubheading??""} onChange={set("heroSubheading")} className={cls.txt} /></div>
+        <div>
+          <Label>Фото героя</Label>
+          <Photo value={form.heroImageUrl??""} onChange={set("heroImageUrl")} />
+        </div>
+        <SaveBtn section="hero" fields={["heroLine1","heroLine2","heroLine3","heroSubheading","heroImageUrl"]} />
+      </div>
+
+      {/* Gallery */}
+      <div className={cls.sec}>
+        <p className={cls.h3}>Галерея студии</p>
+        <p className="text-xs text-[#9a8878]">Фото для карусели «Наша студия» на главной. Рекомендуется 8–12 фото, соотношение 3:4.</p>
+        <GalleryManager urls={form.galleryUrls??[]} onChange={v => setForm(f => ({ ...f, galleryUrls: v }))} />
+        <SaveBtn section="gallery" fields={["galleryUrls"]} />
+      </div>
+
+      {/* Clinic photos */}
+      <div className={cls.sec}>
+        <p className={cls.h3}>Фото студии (в разделе услуг)</p>
+        <p className="text-xs text-[#9a8878]">Два фото, которые показываются рядом с услугами на главной странице.</p>
+        <div className="grid sm:grid-cols-2 gap-6">
+          <div><Label>Фото 1</Label><Photo value={form.clinicImage1Url??""} onChange={set("clinicImage1Url")} /></div>
+          <div><Label>Фото 2</Label><Photo value={form.clinicImage2Url??""} onChange={set("clinicImage2Url")} /></div>
+        </div>
+        <SaveBtn section="clinic" fields={["clinicImage1Url","clinicImage2Url"]} />
+      </div>
+
+      {/* About */}
+      <div className={cls.sec}>
+        <p className={cls.h3}>О студии</p>
+        <div>
+          <Label>Текст</Label>
+          <textarea rows={6} value={form.aboutText??""} onChange={set("aboutText")} className={cls.txt} />
+        </div>
+        <SaveBtn section="about" fields={["aboutText"]} />
+      </div>
     </div>
   );
 }
@@ -128,16 +271,14 @@ function Masters({ canEdit }) {
     <div className="space-y-6">
       {canEdit && (
         <form onSubmit={submit} className="bg-white border border-[#ddd3ca] p-5 space-y-4">
-          <p className="text-[10px] tracking-widest uppercase text-[#9a8878] border-b border-[#ede3da] pb-2">
-            {edit ? "✎ Редактировать мастера" : "+ Добавить мастера"}
-          </p>
+          <p className={cls.h3}>{edit ? "✎ Редактировать мастера" : "+ Добавить мастера"}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             <div><Label>Имя *</Label><input required value={form.name} onChange={set("name")} className={cls.inp} /></div>
             <div><Label>Должность</Label><input value={form.role} onChange={set("role")} className={cls.inp} /></div>
             <div><Label>Опыт</Label><input value={form.experience} onChange={set("experience")} placeholder="12 лет опыта" className={cls.inp} /></div>
             <div><Label>Специализация</Label><input value={form.spec} onChange={set("spec")} className={cls.inp} /></div>
             <div className="sm:col-span-2"><Label>Биография</Label><textarea rows={3} value={form.bio} onChange={set("bio")} className={cls.txt} /></div>
-            <div className="sm:col-span-2"><Photo value={form.photoUrl} onChange={set("photoUrl")} /></div>
+            <div className="sm:col-span-2"><Label>Фото</Label><Photo value={form.photoUrl} onChange={set("photoUrl")} /></div>
             <div><Label>Порядок</Label><input type="number" value={form.order} onChange={set("order")} placeholder="1" className={cls.inp} /></div>
           </div>
           <div className="flex gap-3 items-center flex-wrap pt-1">
@@ -148,9 +289,8 @@ function Masters({ canEdit }) {
           </div>
         </form>
       )}
-
       <div className="space-y-2">
-        {list.length === 0 && <p className="text-[#9a8878] text-sm text-center py-8">Нет данных — нажмите «Загрузить данные» выше</p>}
+        {list.length === 0 && <p className="text-[#9a8878] text-sm text-center py-8">Нет мастеров — добавьте первого</p>}
         {list.map(m => (
           <div key={m._id} className="bg-white border border-[#ddd3ca] p-4 flex gap-4 items-center">
             <div className="w-12 h-12 shrink-0 border border-[#ede3da] overflow-hidden bg-[#f5ede8]">
@@ -217,9 +357,7 @@ function Reviews({ canEdit }) {
     <div className="space-y-6">
       {canEdit && (
         <form onSubmit={submit} className="bg-white border border-[#ddd3ca] p-5 space-y-4">
-          <p className="text-[10px] tracking-widest uppercase text-[#9a8878] border-b border-[#ede3da] pb-2">
-            {edit ? "✎ Редактировать отзыв" : "+ Добавить отзыв"}
-          </p>
+          <p className={cls.h3}>{edit ? "✎ Редактировать отзыв" : "+ Добавить отзыв"}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             <div><Label>Имя клиента *</Label><input required value={form.name} onChange={set("name")} className={cls.inp} /></div>
             <div className="flex items-center gap-4 pt-5">
@@ -232,7 +370,7 @@ function Reviews({ canEdit }) {
               ))}
             </div>
             <div className="sm:col-span-2"><Label>Текст отзыва *</Label><textarea required rows={4} value={form.text} onChange={set("text")} className={cls.txt} /></div>
-            <div className="sm:col-span-2"><Photo value={form.photoUrl} onChange={set("photoUrl")} /></div>
+            <div className="sm:col-span-2"><Label>Фото</Label><Photo value={form.photoUrl} onChange={set("photoUrl")} /></div>
             <div><Label>Порядок</Label><input type="number" value={form.order} onChange={set("order")} placeholder="1" className={cls.inp} /></div>
           </div>
           <div className="flex gap-3 items-center flex-wrap pt-1">
@@ -243,9 +381,8 @@ function Reviews({ canEdit }) {
           </div>
         </form>
       )}
-
       <div className="space-y-2">
-        {list.length === 0 && <p className="text-[#9a8878] text-sm text-center py-8">Нет данных</p>}
+        {list.length === 0 && <p className="text-[#9a8878] text-sm text-center py-8">Нет отзывов</p>}
         {list.map(r => (
           <div key={r._id} className="bg-white border border-[#ddd3ca] p-4 flex gap-4 items-start">
             <div className="w-11 h-11 shrink-0 rounded-full border border-[#ede3da] overflow-hidden bg-[#f5ede8]">
@@ -317,9 +454,7 @@ function Services({ canEdit }) {
     <div className="space-y-6">
       {canEdit && (
         <form onSubmit={submit} className="bg-white border border-[#ddd3ca] p-5 space-y-4">
-          <p className="text-[10px] tracking-widest uppercase text-[#9a8878] border-b border-[#ede3da] pb-2">
-            {edit ? "✎ Редактировать услугу" : "+ Добавить услугу"}
-          </p>
+          <p className={cls.h3}>{edit ? "✎ Редактировать услугу" : "+ Добавить услугу"}</p>
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <Label>Категория</Label>
@@ -340,8 +475,6 @@ function Services({ canEdit }) {
           </div>
         </form>
       )}
-
-      {/* Filter */}
       <div className="flex flex-wrap gap-2">
         {[{v:"all",l:"Все"}, ...CATS].map(c => (
           <button key={c.v} onClick={() => setFilter(c.v)}
@@ -350,7 +483,6 @@ function Services({ canEdit }) {
           </button>
         ))}
       </div>
-
       <div className="space-y-1.5">
         {shown.length === 0 && <p className="text-[#9a8878] text-sm text-center py-8">Нет данных</p>}
         {shown.map(s => (
@@ -373,14 +505,16 @@ function Services({ canEdit }) {
 
 /* ─── Main Page ──────────────────────────────────── */
 const TABS = [
+  { id: "settings", label: "⚙ Настройки" },
   { id: "masters",  label: "Мастера" },
   { id: "reviews",  label: "Отзывы" },
   { id: "services", label: "Услуги" },
 ];
 
 export default function AdminPage() {
-  const [tab,      setTab]      = useState("masters");
-  const [status,   setStatus]   = useState("checking"); // checking | ok | no_token
+  const [tab,    setTab]    = useState("settings");
+  const [status, setStatus] = useState("checking");
+
   useEffect(() => {
     fetch("/api/admin/ping")
       .then(r => r.json())
@@ -392,7 +526,6 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#f5ede8]">
-      {/* Header */}
       <header className="bg-[#1a1714] sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -417,28 +550,30 @@ export default function AdminPage() {
       </header>
 
       <div className="max-w-5xl mx-auto px-5 py-8">
-
-        {/* Status banners */}
         {status === "checking" && (
           <div className="border border-[#ddd3ca] bg-white p-4 mb-6 text-sm text-[#9a8878]">
-            Проверяем подключение к базе данных...
+            Проверяем подключение...
           </div>
         )}
         {status === "no_token" && (
-          <div className="bg-amber-50 border border-amber-300 p-4 mb-6 rounded">
+          <div className="bg-amber-50 border border-amber-300 p-4 mb-6">
             <p className="text-amber-800 font-semibold text-sm mb-1">⚠ База данных не подключена</p>
             <p className="text-amber-700 text-xs leading-relaxed">
-              Добавьте переменную <code className="bg-amber-100 px-1 rounded font-mono">SANITY_API_TOKEN</code> в настройки Vercel → Settings → Environment Variables, затем передеплойте.
+              Добавьте <code className="bg-amber-100 px-1 font-mono">SANITY_API_TOKEN</code> в настройки Vercel → Settings → Environment Variables, затем передеплойте.
             </p>
           </div>
         )}
-        {status === "ok" && <SeedBanner />}
+        {status === "ok" && (
+          <div className="bg-green-50 border border-green-200 p-4 mb-6">
+            <p className="text-green-800 text-sm font-semibold">✓ База данных подключена</p>
+            <p className="text-green-700 text-xs mt-0.5">Изменения сохраняются автоматически и сразу отображаются на сайте.</p>
+          </div>
+        )}
 
-        {/* Tabs */}
         <div className="flex border-b border-[#ddd3ca] mb-7 overflow-x-auto gap-0">
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={`px-6 py-3 text-xs tracking-widest uppercase whitespace-nowrap shrink-0 transition-colors ${
+              className={`px-5 py-3 text-xs tracking-widest uppercase whitespace-nowrap shrink-0 transition-colors ${
                 tab === t.id
                   ? "text-[#1a1714] border-b-2 border-[#b8976a] -mb-px font-medium"
                   : "text-[#9a8878] hover:text-[#1a1714]"
@@ -448,14 +583,13 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Content */}
         <div>
-          {tab === "masters"  && <Masters  canEdit={canEdit} />}
-          {tab === "reviews"  && <Reviews  canEdit={canEdit} />}
-          {tab === "services" && <Services canEdit={canEdit} />}
+          {tab === "settings" && <SiteSettings canEdit={canEdit} />}
+          {tab === "masters"  && <Masters      canEdit={canEdit} />}
+          {tab === "reviews"  && <Reviews      canEdit={canEdit} />}
+          {tab === "services" && <Services     canEdit={canEdit} />}
         </div>
 
-        {/* Footer links */}
         <div className="mt-12 pt-6 border-t border-[#ddd3ca] flex flex-wrap gap-3">
           {[
             { href: "/ru",          label: "Главная" },
